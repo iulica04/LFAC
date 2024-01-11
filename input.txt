@@ -1,21 +1,21 @@
-int x;
-unsigned q;
-const int a := 18;
-const string b := "Hello";
-int y;
-float c;
-int d[10];
 begin_progr
-x := 10;
-y := x;
+int x;
+char m[10];
+int y := 2;
+int adunare(int a, int b);
+int scadere();
+const int b := 10;
+int a := -2;
+bool bb := true;
+unsigned aa;
+string str;
+int q[10];
+begin_main
+x:= 10;
+aa := 0;
+a --;
 x ++;
-q := 2;
-q ++;
-c := 1.3;
-c ++;
-d[1] := 2;
-d[1] ++;
-x := d[1];
-d[1] := y;
-d[1] := a;
+x --;
+m[1] := 'a';
+end_main
 end_progr
