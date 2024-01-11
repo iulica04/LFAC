@@ -6,6 +6,7 @@
 
 using namespace std;
 
+
 struct IdInfo {
     string type;
     string name;
@@ -32,6 +33,8 @@ struct IdFunction {
     std::string parameters;
 };
 
+
+
 class IdList {
     vector<IdInfo> vars;
     vector<IdArray> arrays;
@@ -43,13 +46,14 @@ public:
     bool existsFunction(const char* s);
     bool existsArray(const char* s);
     bool existsConstant(const char* s);
-    void addVar(const char* type, const char* name );
+    void addVar(const char* type, const char* name);
     void addArray(const char* type, const char* name, int size);
     void addFunction(const std::string& type, const std::string& name, const std::string& parameters);
     void addConstant(const char* type, const char* name, const char* value);
     void printVars();
     void printFunctions(); 
     void printConstants();
+    void printArrays();
     string getVarType(const char* var);
     string getConstType(const char* var);
     string getArrayType(const char* var);
@@ -61,5 +65,8 @@ public:
     int getArraySize(const char* name);
     void incrementVar(const char* name);
     void incrementArrayElement(const char* name, int index);
+    void decrementVar(const char* name);
+    void decrementArrayElement(const char* name, int index);
+
     ~IdList();
 };
