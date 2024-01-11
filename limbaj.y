@@ -25,19 +25,19 @@ char *Function(char sir1[], char sir2[], char intre[3])
     char* string;
 }
 %token BGIN END ASSIGN 
-%token<string> ID INT VOID UNSIGNED STRING CHAR FLOAT BOOL CALCULATE NUMAR NUMAR_FLOAT NUMAR_NATURAL CARACTER SIR TRUE FALSE CONST ARITMETIC_INCREMENT ARITMETIC_DECREMENT
+%token<string> ID INT VOID UNSIGNED STRING CHAR FLOAT BOOL CALCULATE NUMAR NUMAR_FLOAT NUMAR_NATURAL CARACTER SIR TRUE FALSE CONST ARITMETIC_INCREMENT ARITMETIC_DECREMENT ARITMETIC_ADD ARITMETIC_SUB ARITMETIC_MUL ARITMETIC_DIV ARITMETIC_POW
 %type<string> list_param 
-%type<string> param type variabile 
+%type<string> param type
 %start progr
 %%
 progr: declarations block {printf("The program is correct!\n");}
      ;
 
 declarations :  decl ';'          
-	      |  declarations decl ';'   
+	      | declarations decl ';'  
 	      ;
 
-decl  : type ID 
+decl  : INT ID 
         { 
             if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2)) 
             {
@@ -48,7 +48,158 @@ decl  : type ID
                 yyerror("Error: Variable exists.");
            }
         }
-      | type ID '(' list_param ')'
+      | FLOAT ID 
+        { 
+            if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2)) 
+            {
+                ids.addVar($1,$2);
+            }
+            else
+           {
+                yyerror("Error: Variable exists.");
+           }
+        }
+      | UNSIGNED ID 
+        { 
+            if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2)) 
+            {
+                ids.addVar($1,$2);
+            }
+            else
+           {
+                yyerror("Error: Variable exists.");
+           }
+        }
+      | CHAR ID 
+        { 
+            if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2)) 
+            {
+                ids.addVar($1,$2);
+            }
+            else
+           {
+                yyerror("Error: Variable exists.");
+           }
+        }
+      | STRING ID 
+        { 
+            if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2)) 
+            {
+                ids.addVar($1,$2);
+            }
+            else
+           {
+                yyerror("Error: Variable exists.");
+           }
+        }
+      | BOOL ID 
+        { 
+            if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2)) 
+            {
+                ids.addVar($1,$2);
+            }
+            else
+           {
+                yyerror("Error: Variable exists.");
+           }
+        }
+      | INT ID ASSIGN NUMAR_NATURAL
+      {
+            if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2)) 
+            {
+                ids.addVar($1,$2);
+                ids.updateVarValue($2, $4);
+            }
+            else
+           {
+                yyerror("Error: Variable exists.");
+           }
+      }
+      | INT ID ASSIGN NUMAR
+      {
+            if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2)) 
+            {
+                ids.addVar($1,$2);
+                ids.updateVarValue($2, $4);
+            }
+            else
+           {
+                yyerror("Error: Variable exists.");
+           }
+      }
+      | UNSIGNED ID ASSIGN NUMAR_NATURAL
+      {
+           if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2)) 
+            {
+                ids.addVar($1,$2);
+                ids.updateVarValue($2, $4);
+            }
+            else
+           {
+                yyerror("Error: Variable exists.");
+           }
+      }
+      | FLOAT ID ASSIGN NUMAR_FLOAT
+      {
+           if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2)) 
+            {
+                ids.addVar($1,$2);
+                ids.updateVarValue($2, $4);
+            }
+            else
+           {
+                yyerror("Error: Variable exists.");
+           }
+      }
+      | CHAR ID ASSIGN CARACTER
+      {
+           if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2)) 
+            {
+                ids.addVar($1,$2);
+                ids.updateVarValue($2, $4);
+            }
+            else
+           {
+                yyerror("Error: Variable exists.");
+           }
+      }
+      | STRING ID ASSIGN SIR
+      {
+           if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2)) 
+            {
+                ids.addVar($1,$2);
+                ids.updateVarValue($2, $4);
+            }
+            else
+           {
+                yyerror("Error: Variable exists.");
+           }
+      }
+      | BOOL ID ASSIGN TRUE
+      {
+           if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2)) 
+            {
+                ids.addVar($1,$2);
+                ids.updateVarValue($2, "true");
+            }
+            else
+           {
+                yyerror("Error: Variable exists.");
+           }
+      }
+      | BOOL ID ASSIGN FALSE
+      {
+           if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2)) 
+            {
+                ids.addVar($1,$2);
+                ids.updateVarValue($2, "false");
+            }
+            else
+           {
+                yyerror("Error: Variable exists.");
+           }
+      }
+      | INT ID '(' list_param ')'
       {
            if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2))
            {
@@ -59,7 +210,73 @@ decl  : type ID
                 yyerror("Error: Variable exists.");
            }
       }
-      | type ID '(' ')' 
+      | UNSIGNED ID '(' list_param ')'
+      {
+           if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2))
+           {
+                ids.addFunction($1, $2, $4);
+           }
+           else
+           {
+                yyerror("Error: Variable exists.");
+           }
+      }
+      | FLOAT ID '(' list_param ')'
+      {
+           if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2))
+           {
+                ids.addFunction($1, $2, $4);
+           }
+           else
+           {
+                yyerror("Error: Variable exists.");
+           }
+      }
+      | BOOL ID '(' list_param ')'
+      {
+           if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2))
+           {
+                ids.addFunction($1, $2, $4);
+           }
+           else
+           {
+                yyerror("Error: Variable exists.");
+           }
+      }
+      | STRING ID '(' list_param ')'
+      {
+           if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2))
+           {
+                ids.addFunction($1, $2, $4);
+           }
+           else
+           {
+                yyerror("Error: Variable exists.");
+           }
+      }
+      | CHAR ID '(' list_param ')'
+      {
+           if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2))
+           {
+                ids.addFunction($1, $2, $4);
+           }
+           else
+           {
+                yyerror("Error: Variable exists.");
+           }
+      }
+      | VOID ID '(' list_param ')'
+      {
+           if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2))
+           {
+                ids.addFunction($1, $2, $4);
+           }
+           else
+           {
+                yyerror("Error: Variable exists.");
+           }
+      }
+      | INT ID '(' ')' 
       {
         if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2))
            {
@@ -70,7 +287,84 @@ decl  : type ID
                 yyerror("Error: Variable exists.");
            }
       }
-      | type ID '['NUMAR_NATURAL']'
+      | UNSIGNED ID '(' ')' 
+      {
+        if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2))
+           {
+                ids.addFunction($1, $2, "");
+           }
+           else
+           {
+                yyerror("Error: Variable exists.");
+           }
+      }
+      | FLOAT ID '(' ')' 
+      {
+        if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2))
+           {
+                ids.addFunction($1, $2, "");
+           }
+           else
+           {
+                yyerror("Error: Variable exists.");
+           }
+      }
+      | BOOL ID '(' ')' 
+      {
+        if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2))
+           {
+                ids.addFunction($1, $2, "");
+           }
+           else
+           {
+                yyerror("Error: Variable exists.");
+           }
+      }
+      | CHAR ID '(' ')' 
+      {
+        if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2))
+           {
+                ids.addFunction($1, $2, "");
+           }
+           else
+           {
+                yyerror("Error: Variable exists.");
+           }
+      }
+      | STRING ID '(' ')' 
+      {
+        if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2))
+           {
+                ids.addFunction($1, $2, "");
+           }
+           else
+           {
+                yyerror("Error: Variable exists.");
+           }
+      }
+      | VOID ID '(' ')' 
+      {
+        if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2))
+           {
+                ids.addFunction($1, $2, "");
+           }
+           else
+           {
+                yyerror("Error: Variable exists.");
+           }
+      }
+      | INT ID '['NUMAR_NATURAL']'
+        { 
+            if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2)) 
+            {
+                ids.addArray($1,$2, atoi($4));
+            }
+            else
+           {
+                yyerror("Error: Variable exists.");
+           }
+        }
+      | CHAR ID '['NUMAR_NATURAL']'
         { 
             if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2)) 
             {
@@ -147,9 +441,7 @@ decl  : type ID
                 yyerror("Error: Variable exists.");
             }
         }
-
       ;
-
 
 
 list_param : param
@@ -197,34 +489,6 @@ type : INT
        }
        ;
 
-variabile : NUMAR
-       {
-          $$ = $1;
-       }
-     | NUMAR_FLOAT
-       {
-          $$ = $1;
-       }
-     | NUMAR_NATURAL
-       {
-          $$ = $1;
-       }
-     | SIR
-       {
-          $$ = $1;
-       }
-     | CARACTER
-       {
-          $$ = $1;
-       }
-     | TRUE
-       {
-          $$ = $1;
-       }
-     | FALSE
-       {
-          $$ = $1;
-       }
 
 block : BGIN list END  
      ;
@@ -647,9 +911,8 @@ void yyerror(const char * s){
 int main(int argc, char** argv){
      yyin=fopen(argv[1],"r");
      yyparse();
-     cout << "Variables:" <<endl;
      ids.printVars();
+     ids.printArrays();
      ids.printFunctions();
      ids.printConstants();
-    
 }
