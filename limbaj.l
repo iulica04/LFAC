@@ -16,11 +16,19 @@
 "const" {yylval.string = strdup(yytext); return CONST;}
 "true" {yylval.string = strdup(yytext); return TRUE;}
 "false" {yylval.string = strdup(yytext); return FALSE;}
-"begin_progr" {return BGIN;} 
-"end_progr" {return END;}
+"begin_progr" {return BGIN_PROG;}
+"end_progr" {return END_PROG;}
+"begin_main" {return BGIN_MAIN;}
+"end_main" {return END_MAIN;}
+
 
 "++" {return ARITMETIC_INCREMENT;}
 "--" {return ARITMETIC_DECREMENT;}
+"+" {return ARITMETIC_ADD;}
+"-" {return ARITMETIC_SUB;}
+"/" {return ARITMETIC_DIV;}
+"*" {return ARITMETIC_MUL;}
+"**" {return ARITMETIC_POW;}
 
 [a-zA-Z][a-zA-Z0-9]* {yylval.string = strdup(yytext); return ID;}             // declarari variabile
 ":=" {return ASSIGN;}                                                         // asignare 
