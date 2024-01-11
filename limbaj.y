@@ -24,20 +24,22 @@ char *Function(char sir1[], char sir2[], char intre[3])
 %union {
     char* string;
 }
-%token BGIN END ASSIGN 
+%token BGIN_MAIN END_MAIN BGIN_PROG END_PROG ASSIGN 
 %token<string> ID INT VOID UNSIGNED STRING CHAR FLOAT BOOL CALCULATE NUMAR NUMAR_FLOAT NUMAR_NATURAL CARACTER SIR TRUE FALSE CONST ARITMETIC_INCREMENT ARITMETIC_DECREMENT ARITMETIC_ADD ARITMETIC_SUB ARITMETIC_MUL ARITMETIC_DIV ARITMETIC_POW
 %type<string> list_param 
 %type<string> param type
 %start progr
 %%
-progr: declarations block {printf("The program is correct!\n");}
+progr: BGIN_PROG global block END_PROG {printf("The program is correct!\n");}
      ;
 
-declarations :  decl ';'          
-	      | declarations decl ';'  
+global :  decl_variabile ';'     
+          | functii ';'     
+	      | global decl_variabile ';'  
+          | global functii ';'
 	      ;
 
-decl  : INT ID 
+decl_variabile : INT ID 
         { 
             if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2)) 
             {
@@ -199,7 +201,97 @@ decl  : INT ID
                 yyerror("Error: Variable exists.");
            }
       }
-      | INT ID '(' list_param ')'
+      | INT ID '['NUMAR_NATURAL']'
+        { 
+            if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2)) 
+            {
+                ids.addArray($1,$2, atoi($4));
+            }
+            else
+           {
+                yyerror("Error: Variable exists.");
+           }
+        }
+      | CHAR ID '['NUMAR_NATURAL']'
+        { 
+            if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2)) 
+            {
+                ids.addArray($1,$2, atoi($4));
+            }
+            else
+           {
+                yyerror("Error: Variable exists.");
+           }
+        }
+      | CONST INT ID ASSIGN NUMAR
+        {
+            if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2))
+            {
+                ids.addConstant($2, $3, $5);
+            }
+            else
+            {
+                yyerror("Error: Variable exists.");
+            }
+        }
+      | CONST INT ID ASSIGN NUMAR_NATURAL
+        {
+            if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2))
+            {
+                ids.addConstant($2, $3, $5);
+            }
+            else
+            {
+                yyerror("Error: Variable exists.");
+            }
+        }
+      | CONST FLOAT ID ASSIGN NUMAR_FLOAT
+        {
+            if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2))
+            {
+                ids.addConstant($2, $3, $5);
+            }
+            else
+            {
+                yyerror("Error: Variable exists.");
+            }
+        }
+      | CONST CHAR ID ASSIGN CARACTER
+        {
+            if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2))
+            {
+                ids.addConstant($2, $3, $5);
+            }
+            else
+            {
+                yyerror("Error: Variable exists.");
+            }
+        }
+      | CONST STRING ID ASSIGN SIR
+        {
+            if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2))
+            {
+                ids.addConstant($2, $3, $5);
+            }
+            else
+            {
+                yyerror("Error: Variable exists.");
+            }
+        }
+      | CONST UNSIGNED ID ASSIGN NUMAR_NATURAL
+        {
+            if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2))
+            {
+                ids.addConstant($2, $3, $5);
+            }
+            else
+            {
+                yyerror("Error: Variable exists.");
+            }
+        }
+      ;
+
+functii : | INT ID '(' list_param ')'
       {
            if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2))
            {
@@ -353,96 +445,6 @@ decl  : INT ID
                 yyerror("Error: Variable exists.");
            }
       }
-      | INT ID '['NUMAR_NATURAL']'
-        { 
-            if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2)) 
-            {
-                ids.addArray($1,$2, atoi($4));
-            }
-            else
-           {
-                yyerror("Error: Variable exists.");
-           }
-        }
-      | CHAR ID '['NUMAR_NATURAL']'
-        { 
-            if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2)) 
-            {
-                ids.addArray($1,$2, atoi($4));
-            }
-            else
-           {
-                yyerror("Error: Variable exists.");
-           }
-        }
-      | CONST INT ID ASSIGN NUMAR
-        {
-            if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2))
-            {
-                ids.addConstant($2, $3, $5);
-            }
-            else
-            {
-                yyerror("Error: Variable exists.");
-            }
-        }
-      | CONST INT ID ASSIGN NUMAR_NATURAL
-        {
-            if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2))
-            {
-                ids.addConstant($2, $3, $5);
-            }
-            else
-            {
-                yyerror("Error: Variable exists.");
-            }
-        }
-      | CONST FLOAT ID ASSIGN NUMAR_FLOAT
-        {
-            if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2))
-            {
-                ids.addConstant($2, $3, $5);
-            }
-            else
-            {
-                yyerror("Error: Variable exists.");
-            }
-        }
-      | CONST CHAR ID ASSIGN CARACTER
-        {
-            if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2))
-            {
-                ids.addConstant($2, $3, $5);
-            }
-            else
-            {
-                yyerror("Error: Variable exists.");
-            }
-        }
-      | CONST STRING ID ASSIGN SIR
-        {
-            if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2))
-            {
-                ids.addConstant($2, $3, $5);
-            }
-            else
-            {
-                yyerror("Error: Variable exists.");
-            }
-        }
-      | CONST UNSIGNED ID ASSIGN NUMAR_NATURAL
-        {
-            if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2))
-            {
-                ids.addConstant($2, $3, $5);
-            }
-            else
-            {
-                yyerror("Error: Variable exists.");
-            }
-        }
-      ;
-
 
 list_param : param
            {
@@ -450,7 +452,7 @@ list_param : param
            }
            | param ',' list_param
            {
-               $$ = Function($1, $3, ",");
+               $$ = Function($1, $3, ", ");
            }
            ;
 
@@ -490,15 +492,19 @@ type : INT
        ;
 
 
-block : BGIN list END  
+block : BGIN_MAIN list END_MAIN
      ;
      
 
-list :  statement ';' 
-     | list statement ';'
+list :  asignare ';' 
+     | incrementare ';'
+     | decrementare ';'
+     | list asignare ';'
+     | list incrementare ';'
+     | list decrementare ';'
      ;
 
-statement :  ID ASSIGN ID 
+asignare :  ID ASSIGN ID 
             {
                 if((ids.existsVar($1)) && ids.existsVar($3))
                 {
@@ -889,20 +895,28 @@ statement :  ID ASSIGN ID
                     yyerror("Error: Variable not declared.");
                 }
           }
-          | ID ARITMETIC_INCREMENT
-          {
-              ids.incrementVar($1);
-          }
-          | ID '[' NUMAR_NATURAL']' ARITMETIC_INCREMENT
-          {
-             ids.incrementArrayElement($1, atoi($3));
-          }
-          | ID '(' CALCULATE call_list ')'
          ;
 
-call_list : NUMAR
-           | call_list ',' NUMAR
-           ;
+ incrementare : ID ARITMETIC_INCREMENT
+                {
+                    ids.incrementVar($1);
+                }
+              | ID '['NUMAR_NATURAL']' ARITMETIC_INCREMENT
+                {
+                    ids.incrementArrayElement($1, atoi($3));
+                }
+                ;
+
+decrementare : ID ARITMETIC_DECREMENT
+               {
+                    ids.decrementVar($1);
+               }
+             | ID '['NUMAR_NATURAL']' ARITMETIC_DECREMENT
+               {
+                    ids.decrementArrayElement($1, atoi($3)); 
+               }
+
+
 %%
 void yyerror(const char * s){
     printf("error: %s at line:%d\n",s,yylineno);
