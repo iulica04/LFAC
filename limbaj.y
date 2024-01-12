@@ -20,6 +20,11 @@ char *Function(char sir1[], char sir2[], char intre[3])
     return p;
 }
 
+std::string Function2(const std::string& type, const std::string& value1, const std::string& value2)
+{
+    return type + " " + value1 + value2;
+}
+
 %}
 %union {
     char* string;
@@ -27,7 +32,7 @@ char *Function(char sir1[], char sir2[], char intre[3])
 %token BGIN_MAIN END_MAIN BGIN_PROG END_PROG ASSIGN 
 %token<string> ID INT VOID UNSIGNED STRING CHAR FLOAT BOOL CALCULATE NUMAR NUMAR_FLOAT NUMAR_NATURAL CARACTER SIR TRUE FALSE CONST ARITMETIC_INCREMENT ARITMETIC_DECREMENT ARITMETIC_ADD ARITMETIC_SUB ARITMETIC_MUL ARITMETIC_DIV ARITMETIC_POW
 %type<string> list_param 
-%type<string> param type
+%type<string> param type call_list parametru
 %start progr
 %%
 progr: BGIN_PROG global block END_PROG {printf("The program is correct!\n");}
@@ -499,9 +504,11 @@ block : BGIN_MAIN list END_MAIN
 list :  asignare ';' 
      | incrementare ';'
      | decrementare ';'
+     | apel_functie ';'
      | list asignare ';'
      | list incrementare ';'
      | list decrementare ';'
+     | list apel_functie ';'
      ;
 
 asignare :  ID ASSIGN ID 
@@ -916,6 +923,139 @@ decrementare : ID ARITMETIC_DECREMENT
                     ids.decrementArrayElement($1, atoi($3)); 
                }
 
+apel_functie : ID'('call_list')'
+              {
+                if(ids.existsFunction($1))
+                {
+                    if(!ids.matchFunctionArguments($1, $3))
+                    {
+                        yyerror("Error: Numele functii este incorect sau numarul de parametrii nu este egal cu numarul de parmetrii cu care este declaarata functia sau tipurile parametrilor difera de tipurile parametrilor declarati.");
+                    }
+                }
+                else
+              {
+                yyerror("Error: Function not declared.");
+              }
+              } 
+              | ID '('')'
+              {
+                if(!ids.existsFunction($1))
+                {
+                    yyerror("Error: Function not declred.");
+                }
+              }
+              ;
+
+call_list : parametru
+           {
+               $$ = $1;
+           }
+           | call_list ',' parametru
+           {
+               $$ = Function($1, $3, ", ");
+           }
+           ;
+
+parametru : ID
+      {
+           if(ids.existsVar($1))
+           {
+           string varType = ids.getVarType($1);
+           char type[10];
+
+           if(varType == "int")
+           {
+                strcpy(type, "int");
+           }
+           else if(varType == "float")
+           {
+               strcpy(type, "float");
+           }
+           else if(varType == "unsigned")
+           {
+               strcpy(type, "unsigned");
+           } 
+           else if(varType == "char")
+           {
+               strcpy(type, "char");
+           } 
+           else if(type == "bool")
+           {
+               strcpy(type, "bool");
+           } 
+           else if(varType == "string")
+           {
+               strcpy(type, "string");
+           } 
+
+           $$ = Function(type, $1, " ");
+           }
+           else if(ids.existsConstant($1))
+           {
+            string varType = ids.getConstType($1);
+           char type[10];
+
+           if(varType == "int")
+           {
+                strcpy(type, "int");
+           }
+           else if(varType == "float")
+           {
+               strcpy(type, "float");
+           }
+           else if(varType == "unsigned")
+           {
+               strcpy(type, "unsigned");
+           } 
+           else if(varType == "char")
+           {
+               strcpy(type, "char");
+           } 
+           else if(type == "bool")
+           {
+               strcpy(type, "bool");
+           } 
+           else if(varType == "string")
+           {
+               strcpy(type, "string");
+           } 
+
+           $$ = Function(type, $1, " ");
+           }
+           else
+           {
+             yyerror("Error: Variable not exists.");
+           }
+      }
+      | NUMAR
+      {
+          $$ = Function("int", $1, " ");
+      }
+      | NUMAR_NATURAL
+      {
+          $$ = Function("int", $1, " ");
+      }
+      | NUMAR_FLOAT
+      {
+          $$ = Function("float", $1, " ");
+      }
+      | CARACTER 
+      {
+          $$ = Function("char", $1, " ");
+      }
+      | SIR
+      {
+          $$ = Function("string", $1, " ");
+      }
+      | TRUE
+      {
+          $$ = Function("bool", "true", " ");
+      }
+      | FALSE
+      {
+          $$ = Function("bool", "false", " ");
+      }
+      ;
 
 %%
 void yyerror(const char * s){
