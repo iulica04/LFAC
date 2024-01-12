@@ -16,6 +16,9 @@ aa := 0;
 a --;
 x ++;
 x --;
+scadere();
+adunare(x, y);
 m[1] := 'a';
+m[2] := 'b';
 end_main
 end_progr
