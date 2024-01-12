@@ -352,6 +352,57 @@ void IdList::decrementArrayElement(const char* name, int index)
     std::cerr << "Error: Array or index not found." << std::endl;
 }
 
+bool IdList::matchFunctionArguments(const char* name, string argumente)
+{
+    std::istringstream stream(argumente);
+    std::string token;      
+    std::vector<std::string> types_argumente;
+    std::vector<std::string> types_function;
+            
+     while (stream >> token) 
+    {
+        if (token == "int" || token == "float" || token == "unsigned" || token == "char" || token == "string" || token == "bool") 
+        {
+            types_argumente.push_back(token);
+        }
+    }
+
+    string strvar = string(name);
+    for (const IdFunction& f : functions) {
+        if (strvar == f.name) 
+        {
+            std::istringstream stream(f.parameters);
+            std::string token;
+            
+            while (stream >> token) 
+            {
+                if (token.find("type") == 0 || (token == "int" || token == "float" || token == "unsigned" || token == "char" || token == "string" || token == "bool")) 
+                {
+                    types_function.push_back(token);
+                }
+            }
+        }
+    }
+
+    if(types_argumente.size() != types_function.size())
+    {
+        return false;
+    }
+    else
+    {
+        if(types_argumente != types_function)
+        {
+            return false;
+        }
+        else 
+        {
+            return true;
+        }
+    }
+
+    
+}
+
 IdList::~IdList() {
     vars.clear();
 }
