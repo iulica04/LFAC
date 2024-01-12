@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <cstring>
+#include <sstream>
 
 
 using namespace std;
@@ -66,7 +67,9 @@ public:
     void incrementVar(const char* name);
     void incrementArrayElement(const char* name, int index);
     void decrementVar(const char* name);
-    void decrementArrayElement(const char* name, int index);
+    void decrementArrayElement(const char* name, int index); 
+
+    bool matchFunctionArguments(const char* name, string argumente);
 
     ~IdList();
 };
