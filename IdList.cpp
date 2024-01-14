@@ -126,7 +126,7 @@ void IdList::printConstants() {
 }
 
 
-string IdList::getVarType(const char* var) {
+string IdList::getVarType(string var) {
     string strvar = string(var);
     for (const IdInfo& v : vars) {
         if (strvar == v.name) {
@@ -137,7 +137,7 @@ string IdList::getVarType(const char* var) {
     return "";
 }
 
-string IdList::getArrayType(const char* var) {
+string IdList::getArrayType(string var) {
     string strvar = string(var);
     for (const IdArray& arr : arrays) {
         if (strvar == arr.name) {
@@ -157,7 +157,20 @@ string IdList::getConstType(const char* var) {
     return ""; // În caz că variabila nu există
 }
 
-string IdList::getVarValue(const char* var) {
+string IdList::getFunctionType(const char* var)
+{
+    string strvar = string(var);
+    for(const IdFunction& func : functions)
+    {
+        if(strvar == func.name)
+        {
+            return func.type;
+        }
+    }
+    return "";
+}
+
+string IdList::getVarValue(string var) {
     string strvar = string(var);
     for (const IdInfo& v : vars) {
         if (strvar == v.name) {
@@ -177,7 +190,7 @@ string IdList::getConstValue(const char* con) {
     return ""; // În caz că variabila nu există
 }
 
-string IdList::getArrayElementValue(const char* var, int index)
+string IdList::getArrayElementValue(string var, int index)
 {
     string strvar = string(var);
     for (IdArray& arr : arrays) {
