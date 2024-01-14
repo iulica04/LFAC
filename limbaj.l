@@ -12,7 +12,6 @@
 "string" {yylval.string = strdup(yytext); return STRING;}
 "bool" {yylval.string = strdup(yytext); return BOOL;}
 "void" {yylval.string = strdup(yytext); return VOID;}
-"unsigned" {yylval.string = strdup(yytext); return UNSIGNED;}
 "const" {yylval.string = strdup(yytext); return CONST;}
 "true" {yylval.string = strdup(yytext); return TRUE;}
 "false" {yylval.string = strdup(yytext); return FALSE;}
@@ -24,16 +23,10 @@
 
 "++" {return ARITMETIC_INCREMENT;}
 "--" {return ARITMETIC_DECREMENT;}
-"+" {return ARITMETIC_ADD;}
-"-" {return ARITMETIC_SUB;}
-"/" {return ARITMETIC_DIV;}
-"*" {return ARITMETIC_MUL;}
-"**" {return ARITMETIC_POW;}
 
 [a-zA-Z][a-zA-Z0-9]* {yylval.string = strdup(yytext); return ID;}             // declarari variabile
 ":=" {return ASSIGN;}                                                         // asignare 
-[0-9]+ {yylval.string = strdup(yytext); return NUMAR_NATURAL;}
-[-+]?[0-9]+ {yylval.string = strdup(yytext); return NUMAR;}                           //numar natural
+-?[0-9]*|0 {yylval.string = strdup(yytext); return NUMAR;}                           //numar natural
 [-+]?[0-9]+.[0-9]+ {yylval.string = strdup(yytext); return NUMAR_FLOAT;}                //numar float 
 \'[a-zA-Z]\' {yylval.string=strdup(yytext); return CARACTER;}                       // caracter 
 \"[a-zA-Z0-9]+\" {yylval.string=strdup(yytext); return SIR;}                     // string
