@@ -1,3 +1,6 @@
+#ifndef IDLIST_H
+#define IDLIST_H
+
 #include <iostream>
 #include <vector>
 #include <string>
@@ -37,12 +40,13 @@ struct IdFunction {
 
 
 class IdList {
+public:
     vector<IdInfo> vars;
     vector<IdArray> arrays;
     std::vector<IdFunction> functions;
     std::vector<IdConstant> constants;
 
-public:
+
     bool existsVar(const char* s);
     bool existsFunction(const char* s);
     bool existsArray(const char* s);
@@ -55,12 +59,13 @@ public:
     void printFunctions(); 
     void printConstants();
     void printArrays();
-    string getVarType(const char* var);
+    string getVarType(string var);
     string getConstType(const char* var);
-    string getArrayType(const char* var);
-    string getVarValue(const char* var);
+    string getArrayType(string var);
+    string getFunctionType(const char* var);
+    string getVarValue(string var);
     string getConstValue(const char* con);
-    string getArrayElementValue(const char* var, int index);
+    string getArrayElementValue(string var, int index);
     void updateVarValue(const char* var, string value);
     void updateArrayValue(const char* name, int index, string value);
     int getArraySize(const char* name);
@@ -73,3 +78,5 @@ public:
 
     ~IdList();
 };
+
+#endif // IDLIST_H
