@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include "IdList.h"
+#include "AST.h"
 extern FILE* yyin;
 extern char* yytext;
 extern int yylineno;
@@ -20,21 +21,22 @@ char *Function(char sir1[], char sir2[], char intre[3])
     return p;
 }
 
-std::string Function2(const std::string& type, const std::string& value1, const std::string& value2)
-{
-    return type + " " + value1 + value2;
-}
 
 %}
 %union {
     char* string;
+    struct AST* tree;
 }
 %token BGIN_MAIN END_MAIN BGIN_PROG END_PROG ASSIGN 
-%token<string> ID INT VOID UNSIGNED STRING CHAR FLOAT BOOL CALCULATE NUMAR NUMAR_FLOAT NUMAR_NATURAL CARACTER SIR TRUE FALSE CONST ARITMETIC_INCREMENT ARITMETIC_DECREMENT ARITMETIC_ADD ARITMETIC_SUB ARITMETIC_MUL ARITMETIC_DIV ARITMETIC_POW
-%type<string> list_param 
-%type<string> param type call_list parametru
+%token<string> ID INT VOID UNSIGNED STRING CHAR FLOAT BOOL CALCULATE NUMAR NUMAR_FLOAT CARACTER SIR TRUE FALSE CONST ARITMETIC_INCREMENT ARITMETIC_DECREMENT
+%type<string> list_param apel_functie
+%type<string> param type call_list parametru 
+%type <tree> e;
+%left '-' '+'
+%left '/' '*'
 %start progr
 %%
+
 progr: BGIN_PROG global block END_PROG {printf("The program is correct!\n");}
      ;
 
@@ -56,17 +58,6 @@ decl_variabile : INT ID
            }
         }
       | FLOAT ID 
-        { 
-            if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2)) 
-            {
-                ids.addVar($1,$2);
-            }
-            else
-           {
-                yyerror("Error: Variable exists.");
-           }
-        }
-      | UNSIGNED ID 
         { 
             if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2)) 
             {
@@ -110,18 +101,6 @@ decl_variabile : INT ID
                 yyerror("Error: Variable exists.");
            }
         }
-      | INT ID ASSIGN NUMAR_NATURAL
-      {
-            if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2)) 
-            {
-                ids.addVar($1,$2);
-                ids.updateVarValue($2, $4);
-            }
-            else
-           {
-                yyerror("Error: Variable exists.");
-           }
-      }
       | INT ID ASSIGN NUMAR
       {
             if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2)) 
@@ -134,18 +113,7 @@ decl_variabile : INT ID
                 yyerror("Error: Variable exists.");
            }
       }
-      | UNSIGNED ID ASSIGN NUMAR_NATURAL
-      {
-           if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2)) 
-            {
-                ids.addVar($1,$2);
-                ids.updateVarValue($2, $4);
-            }
-            else
-           {
-                yyerror("Error: Variable exists.");
-           }
-      }
+      
       | FLOAT ID ASSIGN NUMAR_FLOAT
       {
            if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2)) 
@@ -206,7 +174,7 @@ decl_variabile : INT ID
                 yyerror("Error: Variable exists.");
            }
       }
-      | INT ID '['NUMAR_NATURAL']'
+      | INT ID '['NUMAR']'
         { 
             if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2)) 
             {
@@ -217,7 +185,7 @@ decl_variabile : INT ID
                 yyerror("Error: Variable exists.");
            }
         }
-      | CHAR ID '['NUMAR_NATURAL']'
+      | CHAR ID '['NUMAR']'
         { 
             if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2)) 
             {
@@ -229,17 +197,6 @@ decl_variabile : INT ID
            }
         }
       | CONST INT ID ASSIGN NUMAR
-        {
-            if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2))
-            {
-                ids.addConstant($2, $3, $5);
-            }
-            else
-            {
-                yyerror("Error: Variable exists.");
-            }
-        }
-      | CONST INT ID ASSIGN NUMAR_NATURAL
         {
             if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2))
             {
@@ -283,31 +240,9 @@ decl_variabile : INT ID
                 yyerror("Error: Variable exists.");
             }
         }
-      | CONST UNSIGNED ID ASSIGN NUMAR_NATURAL
-        {
-            if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2))
-            {
-                ids.addConstant($2, $3, $5);
-            }
-            else
-            {
-                yyerror("Error: Variable exists.");
-            }
-        }
       ;
 
 functii : | INT ID '(' list_param ')'
-      {
-           if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2))
-           {
-                ids.addFunction($1, $2, $4);
-           }
-           else
-           {
-                yyerror("Error: Variable exists.");
-           }
-      }
-      | UNSIGNED ID '(' list_param ')'
       {
            if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2))
            {
@@ -374,17 +309,6 @@ functii : | INT ID '(' list_param ')'
            }
       }
       | INT ID '(' ')' 
-      {
-        if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2))
-           {
-                ids.addFunction($1, $2, "");
-           }
-           else
-           {
-                yyerror("Error: Variable exists.");
-           }
-      }
-      | UNSIGNED ID '(' ')' 
       {
         if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2))
            {
@@ -490,10 +414,6 @@ type : INT
        {
           $$ = $1;
        }
-     | UNSIGNED
-       {
-          $$ = $1;
-       }
        ;
 
 
@@ -511,168 +431,7 @@ list :  asignare ';'
      | list apel_functie ';'
      ;
 
-asignare :  ID ASSIGN ID 
-            {
-                if((ids.existsVar($1)) && ids.existsVar($3))
-                {
-                    string var1Type = ids.getVarType($1);
-                    string var2Type = ids.getVarType($3);
-                    string var2Value = ids.getVarValue($3);
-                   
-                    if(var1Type == var2Type) 
-                    {
-                        if (var1Type == "int") 
-                        {
-                            ids.updateVarValue($1, var2Value);
-                        } else 
-                        {
-                            yyerror("Error: Unsupported type for calculation.");
-                        }
-                    } else 
-                    {
-                       yyerror("Error: Incompatible types in assignment.");
-                    }
-                } else if(ids.existsVar($1) && ids.existsConstant($3))
-                {
-                    string var1Type = ids.getVarType($1);
-                    string var2Type = ids.getConstType($3);
-                    string var2Value = ids.getConstValue($3);
-                   
-                    if(var1Type == var2Type) 
-                    {
-                        ids.updateVarValue($1, var2Value);
-                        
-                    } else 
-                    {
-                       yyerror("Error: Incompatible types in assignment.");
-                    }
-                }else
-                {
-                    yyerror("Error: Variable not declared.");
-                }
-            }
-          | ID ASSIGN ID '['NUMAR_NATURAL']'
-          {
-            if((ids.existsVar($1)) && ids.existsArray($3))
-                {
-                    string var1Type = ids.getVarType($1);
-                    string var2Type = ids.getArrayType($3);
-                    string var2Value = ids.getArrayElementValue($3, atoi($5));
-                   
-                    if(var1Type == var2Type) 
-                    {
-                        ids.updateVarValue($1, var2Value); 
-                    } else 
-                    {
-                       yyerror("Error: Incompatible types in assignment.");
-                    }
-                }
-                else
-                {
-                    yyerror("Error: Variable not declared.");
-                }
-          }
-          | ID '['NUMAR_NATURAL']' ASSIGN ID 
-          {
-            if(ids.existsArray($1) && ids.existsVar($6))
-            {
-                string var1Type = ids.getArrayType($1);
-                string var2Type = ids.getVarType($6);
-                string var2Value = ids.getVarValue($6);
-
-                if(var1Type == var2Type) 
-                {
-                    ids.updateArrayValue($1, atoi($3), var2Value); 
-                } else 
-                {
-                   yyerror("Error: Incompatible types in assignment.");
-                }
-            } else if(ids.existsArray($1) && ids.existsConstant($6))
-            {
-                string var1Type = ids.getArrayType($1);
-                string var2Type = ids.getConstType($6);
-                string var2Value = ids.getConstValue($6);
-
-                if(var1Type == var2Type) 
-                {
-                    ids.updateArrayValue($1, atoi($3), var2Value); 
-                } else 
-                {
-                   yyerror("Error: Incompatible types in assignment.");
-                }
-            }
-            else
-            {
-                yyerror("Error: Variable not declared.");
-            }
-          }
-          | ID ASSIGN NUMAR 
-            {
-                if(ids.existsConstant($1))
-                {
-                     yyerror("Error: Variabila constanta.");
-                }
-                else if(ids.existsVar($1)) 
-                {
-                    string varType = ids.getVarType($1);
-                    if (varType == "int") {
-                    ids.updateVarValue($1, $3);
-                    } else 
-                    {
-                        yyerror("Error: Incompatible types in assignment.");
-                    }
-                } else 
-                {
-                    yyerror("Error: Variable not declared.");
-                }
-            }
-          | ID ASSIGN NUMAR_NATURAL
-            {
-                if(ids.existsConstant($1))
-                {
-                     yyerror("Error: Variabila constanta.");
-                }
-                else if(ids.existsVar($1)) 
-                {
-                    string varType = ids.getVarType($1);
-                    if (varType == "unsigned")
-                    {
-                         ids.updateVarValue($1, $3);
-                    } else if (varType == "int")
-                    {
-                         ids.updateVarValue($1, $3);
-                    } 
-                    else 
-                    {
-                        yyerror("Error: Incompatible types in assignment.");
-                    }
-                } else 
-                {
-                    yyerror("Error: Variable not declared.");
-                }
-            }
-          | ID ASSIGN NUMAR_FLOAT 
-            {
-                if(ids.existsConstant($1))
-                {
-                     yyerror("Error: Variabila constanta.");
-                }
-                else if(ids.existsVar($1)) 
-                {
-                    string varType = ids.getVarType($1);
-                    if (varType == "float") 
-                    {
-                        ids.updateVarValue($1, $3);
-                    } else 
-                    {
-                        yyerror("Error: Incompatible types in assignment.");
-                    }
-                } else 
-                {
-                    yyerror("Error: Variable not declared.");
-                }
-            }
-          | ID ASSIGN CARACTER
+asignare :  ID ASSIGN CARACTER
             {
                 if(ids.existsConstant($1))
                 {
@@ -756,72 +515,7 @@ asignare :  ID ASSIGN ID
                     yyerror("Error: Variable not declared.");
                 }
             }
-          | ID '[' NUMAR_NATURAL ']' ASSIGN NUMAR
-          {
-            if(ids.existsArray($1))
-                {
-                    string varType = ids.getArrayType($1);
-                    if(varType == "int")
-                    {
-                        int index = atoi($3);
-                        if (index >= 0 && index < ids.getArraySize($1))
-                        {
-                            ids.updateArrayValue($1, index, $6);
-                        }
-                        else
-                        {
-                            yyerror("Error: Invalid array index.");
-                        }
-                    }
-                    else
-                    {
-                        yyerror("Error: Incompatible types in assignment.");
-                    }
-                }
-                else
-                {
-                    yyerror("Error: Variable not declared.");
-                }
-          }
-          | ID '[' NUMAR_NATURAL ']' ASSIGN NUMAR_NATURAL
-          {
-            if(ids.existsArray($1))
-                {
-                    string varType = ids.getArrayType($1);
-                    if(varType == "unsigned")
-                    {
-                        int index = atoi($3);
-                        if (index >= 0 && index < ids.getArraySize($1))
-                        {
-                            ids.updateArrayValue($1, index, $6);
-                        }
-                        else
-                        {
-                            yyerror("Error: Invalid array index.");
-                        }
-                    } else if(varType == "int")
-                    {
-                        int index = atoi($3);
-                        if (index >= 0 && index < ids.getArraySize($1))
-                        {
-                            ids.updateArrayValue($1, index, $6);
-                        }
-                        else
-                        {
-                            yyerror("Error: Invalid array index.");
-                        }
-                    }
-                    else
-                    {
-                        yyerror("Error: Incompatible types in assignment.");
-                    }
-                }
-                else
-                {
-                    yyerror("Error: Variable not declared.");
-                }
-          }
-          | ID '[' NUMAR_NATURAL ']' ASSIGN CARACTER
+          | ID '[' NUMAR ']' ASSIGN CARACTER
           {
             if(ids.existsArray($1))
                 {
@@ -848,7 +542,7 @@ asignare :  ID ASSIGN ID
                     yyerror("Error: Variable not declared.");
                 }
           }
-          | ID '[' NUMAR_NATURAL ']' ASSIGN STRING
+          | ID '['NUMAR ']' ASSIGN STRING
           {
             if(ids.existsArray($1))
                 {
@@ -875,7 +569,7 @@ asignare :  ID ASSIGN ID
                     yyerror("Error: Variable not declared.");
                 }
           }
-          | ID '[' NUMAR_NATURAL ']' ASSIGN NUMAR_FLOAT
+          | ID '[' NUMAR ']' ASSIGN NUMAR_FLOAT
           {
             if(ids.existsArray($1))
                 {
@@ -902,13 +596,123 @@ asignare :  ID ASSIGN ID
                     yyerror("Error: Variable not declared.");
                 }
           }
-         ;
+          | ID ASSIGN apel_functie
+          {
+            if(ids.existsVar($1))
+            {
+                if(ids.existsFunction($3))
+                {
+                    string VarType = ids.getVarType($1);
+                    string FunctionType = ids.getFunctionType($3);
+                    if(VarType != FunctionType)
+                    {
+                        yyerror("Error: Tipuri diferite.");
+                    }
+                }
+                else
+                {
+                    yyerror("Error: Function not declared...or ...");
+                }
+            }
+            else 
+            {
+                yyerror("Error: Variable not declared.");
+            }
+          }
+          | ID '[' NUMAR ']' ASSIGN apel_functie
+          {
+             if(ids.existsArray($1))
+             {
+                if(ids.existsFunction($6))
+                {
+                    string ArrayType = ids.getArrayType($1);
+                    string FunctionType =ids.getFunctionType($6);
+                    if(ArrayType != FunctionType)
+                    {
+                        yyerror("Error: Tipuri diferite.");
+                    }
+                } else
+                {
+                    yyerror("Error: Function not declared...or ...");
+                }
+            }
+            else 
+            {
+                yyerror("Error: Array not declared.");
+            }
+             
+          }
+          | ID ASSIGN e
+          {
+            if(ids.existsVar($1))
+            {
+                int val = evalAST($3, ids);
+                string Val = to_string(val);
+                ids.updateVarValue($1, Val);
+            }
+            else
+            {
+                yyerror("Error: Variable not exists.");
+            }
+          }
+          | ID '['NUMAR']' ASSIGN e
+          {
+            if(ids.existsArray($1))
+            {
+                int index = atoi($3);
+                if (index >= 0 && index < ids.getArraySize($1))
+                {
+                    int val = evalAST($6, ids);
+                    string Val = to_string(val);
+                    ids.updateArrayValue($1, index, Val);
+                }
+                else
+                {
+                    yyerror("Error: Invalid array index.");
+                }
 
- incrementare : ID ARITMETIC_INCREMENT
+                
+            }
+            else
+            {
+                yyerror("Error: Array not exists.");
+            }
+          }
+          ;
+
+e : e '+' e {$$ = buildAST("+", $1, $3, OPERATOR);}
+  | e '-' e {$$ = buildAST("-", $1, $3, OPERATOR);}
+  | e '/' e {$$ = buildAST("/", $1, $3, OPERATOR);}
+  | e '*' e {$$ = buildAST("*", $1, $3, OPERATOR);}
+  | ID 
+  { 
+    if(ids.existsVar($1))
+    {
+     $$ = buildAST($1, NULL, NULL, IDENTIFICATOR);
+    }
+    else if(ids.existsConstant($1))
+    {
+        $$ = buildAST($1, NULL, NULL, IDENTIFICATOR);
+    }
+  }
+  | NUMAR
+  {
+    $$ = buildAST($1, NULL, NULL, NR_NATURAL);
+  }
+  | ID '['NUMAR']'
+  {
+    string element = $1 + string("[") + $3 + string("]");
+    $$ = buildAST(element, NULL, NULL, ARRAY_ELEMENT);
+  }
+  
+  ;
+          
+
+incrementare : ID ARITMETIC_INCREMENT
                 {
                     ids.incrementVar($1);
                 }
-              | ID '['NUMAR_NATURAL']' ARITMETIC_INCREMENT
+              | ID '['NUMAR']' ARITMETIC_INCREMENT
                 {
                     ids.incrementArrayElement($1, atoi($3));
                 }
@@ -918,7 +722,7 @@ decrementare : ID ARITMETIC_DECREMENT
                {
                     ids.decrementVar($1);
                }
-             | ID '['NUMAR_NATURAL']' ARITMETIC_DECREMENT
+             | ID '['NUMAR']' ARITMETIC_DECREMENT
                {
                     ids.decrementArrayElement($1, atoi($3)); 
                }
@@ -931,6 +735,10 @@ apel_functie : ID'('call_list')'
                     {
                         yyerror("Error: Numele functii este incorect sau numarul de parametrii nu este egal cu numarul de parmetrii cu care este declaarata functia sau tipurile parametrilor difera de tipurile parametrilor declarati.");
                     }
+                    else
+                    {
+                        $$ = $1;
+                    }
                 }
                 else
               {
@@ -942,6 +750,10 @@ apel_functie : ID'('call_list')'
                 if(!ids.existsFunction($1))
                 {
                     yyerror("Error: Function not declred.");
+                }
+                else
+                {
+                    $$ = $1;
                 }
               }
               ;
@@ -1031,10 +843,6 @@ parametru : ID
       {
           $$ = Function("int", $1, " ");
       }
-      | NUMAR_NATURAL
-      {
-          $$ = Function("int", $1, " ");
-      }
       | NUMAR_FLOAT
       {
           $$ = Function("float", $1, " ");
@@ -1056,8 +864,8 @@ parametru : ID
           $$ = Function("bool", "false", " ");
       }
       ;
-
 %%
+
 void yyerror(const char * s){
     printf("error: %s at line:%d\n",s,yylineno);
 }
