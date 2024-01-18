@@ -21,19 +21,55 @@ char *Function(char sir1[], char sir2[], char intre[3])
     return p;
 }
 
+char  *Identificator(string varType)
+{
+
+    if(varType == "int")
+    {
+        return "int";
+    }
+    else if(varType == "float")
+    {
+        return "float";
+    } 
+    else if(varType == "char")
+    {
+         return "char";
+    } 
+    else if(varType == "bool")
+    {
+        return "bool";
+    } 
+    else if(varType == "string")
+    {
+       return "string";
+    }
+}
+
 
 %}
 %union {
+    int intval;
     char* string;
     struct AST* tree;
 }
-%token BGIN_MAIN END_MAIN BGIN_PROG END_PROG ASSIGN 
-%token<string> ID INT VOID UNSIGNED STRING CHAR FLOAT BOOL CALCULATE NUMAR NUMAR_FLOAT CARACTER SIR TRUE FALSE CONST ARITMETIC_INCREMENT ARITMETIC_DECREMENT
-%type<string> list_param apel_functie
-%type<string> param type call_list parametru 
+%token BGIN_MAIN END_MAIN BGIN_PROG END_PROG ASSIGN BGIN_CLASS END_CLASS MYCLASS EVAL TYPEOF
+%token<string> ID INT VOID UNSIGNED STRING CHAR FLOAT BOOL CALCULATE NUMAR NUMAR_FLOAT CARACTER SIR TRUE FALSE CONST ARITMETIC_INCREMENT ARITMETIC_DECREMENT 
+%type<string> list_param parametru 
+%type<string> param type call_list 
+%token<string> LEQ GEQ NEQ EQ RETURN BFCT EFCT
+%token<string> AND OR
+%token<string> TIP CLASS ECLASS IF EIF ELSE
+%token<string> FOR EFOR CONSTANT WHILE EWHILE DO
 %type <tree> e;
-%left '-' '+'
+%type <string> opr
+%type <intval> cond 
+%left '-' '+' 
 %left '/' '*'
+%left OR 
+%left AND
+%left NEQ EQ
+%left LEQ GEQ '<' '>'
 %start progr
 %%
 
@@ -101,80 +137,18 @@ decl_variabile : INT ID
                 yyerror("Error: Variable exists.");
            }
         }
-      | INT ID ASSIGN NUMAR
-      {
+      | INT ID '['NUMAR']'
+        { 
             if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2)) 
             {
-                ids.addVar($1,$2);
-                ids.updateVarValue($2, $4);
+                ids.addArray($1,$2, atoi($4));
             }
             else
            {
                 yyerror("Error: Variable exists.");
            }
-      }
-      
-      | FLOAT ID ASSIGN NUMAR_FLOAT
-      {
-           if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2)) 
-            {
-                ids.addVar($1,$2);
-                ids.updateVarValue($2, $4);
-            }
-            else
-           {
-                yyerror("Error: Variable exists.");
-           }
-      }
-      | CHAR ID ASSIGN CARACTER
-      {
-           if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2)) 
-            {
-                ids.addVar($1,$2);
-                ids.updateVarValue($2, $4);
-            }
-            else
-           {
-                yyerror("Error: Variable exists.");
-           }
-      }
-      | STRING ID ASSIGN SIR
-      {
-           if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2)) 
-            {
-                ids.addVar($1,$2);
-                ids.updateVarValue($2, $4);
-            }
-            else
-           {
-                yyerror("Error: Variable exists.");
-           }
-      }
-      | BOOL ID ASSIGN TRUE
-      {
-           if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2)) 
-            {
-                ids.addVar($1,$2);
-                ids.updateVarValue($2, "true");
-            }
-            else
-           {
-                yyerror("Error: Variable exists.");
-           }
-      }
-      | BOOL ID ASSIGN FALSE
-      {
-           if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2)) 
-            {
-                ids.addVar($1,$2);
-                ids.updateVarValue($2, "false");
-            }
-            else
-           {
-                yyerror("Error: Variable exists.");
-           }
-      }
-      | INT ID '['NUMAR']'
+        }
+      | FLOAT ID '['NUMAR']'
         { 
             if(!ids.existsVar($2) && !ids.existsArray($2) && !ids.existsFunction($2) && !ids.existsConstant($2)) 
             {
@@ -240,6 +214,8 @@ decl_variabile : INT ID
                 yyerror("Error: Variable exists.");
             }
         }
+      | asignare
+        
       ;
 
 functii : | INT ID '(' list_param ')'
@@ -425,10 +401,18 @@ list :  asignare ';'
      | incrementare ';'
      | decrementare ';'
      | apel_functie ';'
+     | if 
+     | for 
+     | do
+     | while
      | list asignare ';'
      | list incrementare ';'
      | list decrementare ';'
      | list apel_functie ';'
+     | list if 
+     | list for
+     | list do
+     | list while
      ;
 
 asignare :  ID ASSIGN CARACTER
@@ -456,7 +440,7 @@ asignare :  ID ASSIGN CARACTER
             {
                 if(ids.existsConstant($1))
                 {
-                     yyerror("Error: Variabila constanta.");
+                    yyerror("Error: Variabila constanta.");
                 }
                 else if(ids.existsVar($1))
                 {
@@ -569,86 +553,45 @@ asignare :  ID ASSIGN CARACTER
                     yyerror("Error: Variable not declared.");
                 }
           }
-          | ID '[' NUMAR ']' ASSIGN NUMAR_FLOAT
-          {
-            if(ids.existsArray($1))
-                {
-                    string varType = ids.getArrayType($1);
-                    if(varType == "float")
-                    {
-                        int index = atoi($3);
-                        if (index >= 0 && index < ids.getArraySize($1))
-                        {
-                            ids.updateArrayValue($1, index, $6);
-                        }
-                        else
-                        {
-                            yyerror("Error: Invalid array index.");
-                        }
-                    }
-                    else
-                    {
-                        yyerror("Error: Incompatible types in assignment.");
-                    }
-                }
-                else
-                {
-                    yyerror("Error: Variable not declared.");
-                }
-          }
-          | ID ASSIGN apel_functie
-          {
-            if(ids.existsVar($1))
-            {
-                if(ids.existsFunction($3))
-                {
-                    string VarType = ids.getVarType($1);
-                    string FunctionType = ids.getFunctionType($3);
-                    if(VarType != FunctionType)
-                    {
-                        yyerror("Error: Tipuri diferite.");
-                    }
-                }
-                else
-                {
-                    yyerror("Error: Function not declared...or ...");
-                }
-            }
-            else 
-            {
-                yyerror("Error: Variable not declared.");
-            }
-          }
-          | ID '[' NUMAR ']' ASSIGN apel_functie
-          {
-             if(ids.existsArray($1))
-             {
-                if(ids.existsFunction($6))
-                {
-                    string ArrayType = ids.getArrayType($1);
-                    string FunctionType =ids.getFunctionType($6);
-                    if(ArrayType != FunctionType)
-                    {
-                        yyerror("Error: Tipuri diferite.");
-                    }
-                } else
-                {
-                    yyerror("Error: Function not declared...or ...");
-                }
-            }
-            else 
-            {
-                yyerror("Error: Array not declared.");
-            }
-             
-          }
           | ID ASSIGN e
           {
             if(ids.existsVar($1))
             {
-                int val = evalAST($3, ids);
-                string Val = to_string(val);
-                ids.updateVarValue($1, Val);
+                string varType = ids.getVarType($1);
+                string exprType = TypeOf($3, ids, yylineno);
+                
+                if(varType == exprType)
+                {
+                    if(varType == "int")
+                    {
+                        int val = evalAST($3, ids, yylineno);
+                        string Val = to_string(val);
+                        ids.updateVarValue($1, Val);
+                    }
+                    else if(varType == "float")
+                    {
+                        float val = evalASTfloat($3, ids, yylineno);
+                        string Val = to_string(val);
+                        ids.updateVarValue($1, Val);
+                    }
+                    else
+                    {
+                        string name = getNameASTelement($3);
+                        if(ids.existsVar(name))
+                        {
+                            string value = ids.getVarValue(name);
+                            ids.updateVarValue($1, value);
+                        } else if(ids.existsConstant(name))
+                        {
+                            string value = ids.getConstValue(name);
+                            ids.updateVarValue($1, value);
+                        }
+                    }
+                }
+                else
+                {
+                    yyerror("Error: Incompatible types in assignment.");
+                }   
             }
             else
             {
@@ -659,31 +602,173 @@ asignare :  ID ASSIGN CARACTER
           {
             if(ids.existsArray($1))
             {
-                int index = atoi($3);
-                if (index >= 0 && index < ids.getArraySize($1))
+                string arrayType = ids.getArrayType($1);
+                string exprType = TypeOf($6, ids, yylineno);
+                
+                if(arrayType == exprType)
                 {
-                    int val = evalAST($6, ids);
-                    string Val = to_string(val);
-                    ids.updateArrayValue($1, index, Val);
+                    int index = atoi($3);
+                    if (index >= 0 && index < ids.getArraySize($1))
+                    {
+                        if(arrayType == "int")
+                        {
+                            int val = evalAST($6, ids, yylineno);
+                            string Val = to_string(val);
+                            ids.updateArrayValue($1, index, Val);
+                        }
+                        else if(arrayType == "float")
+                        {
+                            float val = evalASTfloat($6, ids, yylineno);
+                            string Val = to_string(val);
+                            ids.updateArrayValue($1, index, Val);
+                        }
+                        else 
+                        {
+                            string name = getNameASTelement($6);
+                            string value = ids.getVarValue(name);
+                            ids.updateArrayValue($1, index, value);
+                        }
+                    }  
+                    else
+                    {
+                    yyerror("Error: Invalid array index.");
+                    }
                 }
                 else
                 {
-                    yyerror("Error: Invalid array index.");
-                }
-
-                
+                    yyerror("Error: Incompatible types in assignment.");
+                } 
             }
             else
             {
                 yyerror("Error: Array not exists.");
             }
           }
+          | ID ASSIGN cond
+          {
+            if(ids.existsVar($1))
+            {
+                string varType = ids.getVarType($1);
+                if(varType == "bool")
+                {
+                    if($3 == 1)
+                    {
+                        ids.updateVarValue($1, "true");
+                    }
+                    else
+                    {
+                        ids.updateVarValue($1, "false");
+                    }
+                }
+                else
+                {
+                    yyerror("Error: Invalid assignment.");
+                }
+            }
+            else
+            {
+                yyerror("Error: Variable not exists.");
+            }
+          }
           ;
+
+apel_functie : ID '('call_list')'
+             {
+                if(ids.existsFunction($1))
+                {
+                   ids.matchFunctionArguments($1, $3, yylineno);
+                }
+                else 
+                {
+                    yyerror("Error: Function not exists.");
+                }
+             }
+             | ID '('')'
+             {
+                if(ids.existsFunction($1))
+                {
+                    ids.matchFunctionArguments($1, "", yylineno);
+                }
+                else
+                {
+                    yyerror("Error: Function not exists.");
+                }
+             }
+             | EVAL '('e')'
+             {
+                cout << "The value of EVAL at line " << yylineno << " is: " << evalAST($3, ids, yylineno)<< endl;
+             }
+             | EVAL '('cond')'
+             {
+                string val;
+
+                if($3 == 0)
+                {
+                    cout << "The value of EVAL at line " << yylineno << " is: false." << endl;
+                }
+                else
+                {
+                    cout << "The value of EVAL at line " << yylineno << " is: true." << endl;
+                }
+                
+             }
+             | TYPEOF '('e')'
+             {
+                cout << "The value of TYPEOF at line " << yylineno << " is: " << TypeOf($3, ids, yylineno) << endl;
+             }
+             ;
+
+cond : '(' cond ')' {$$ = $2;}
+     | cond AND cond { int rez1=$1; int rez2=$3; 
+                       $$=(rez1 && rez2);
+                
+                     }
+     | cond OR cond { int rez1=$1; int rez2=$3;
+                      $$=(rez1 || rez2);
+                    }
+     | e opr e { 
+                 int rez1=evalAST($1, ids, yylineno); int rez2=evalAST($3, ids, yylineno);
+                 if ($2 == "<=") $$=(rez1 <= rez2);
+                 if ($2 == ">=") $$=(rez1 >= rez2);
+                 if ($2 == "!=") $$=(rez1 != rez2);
+                 if ($2 == "==") $$=(rez1 == rez2);
+                 if ($2 == ">") $$=(rez1 > rez2);
+                 if ($2 == "<") $$=(rez1 < rez2);
+            
+    }
+    ;
+
+opr : LEQ {$$ = $1;}
+    | GEQ {$$ = $1;}
+    | NEQ {$$ = $1;}
+    | EQ  {$$ = $1;}
+    | '>' {$$ = ">";}
+    | '<' {$$ = "<";}
+    ;
+
+if : IF '(' cond ')' list EIF
+   | IF '(' cond ')' list ELSE list EIF
+   ;
+
+for : FOR '(' type ID ASSIGN e ';' cond ';' incrementare ')' list EFOR
+    | FOR '(' type ID ASSIGN e ';' cond ';' decrementare ')' list EFOR
+    | FOR '(' ID ASSIGN e ';' cond ';' incrementare')' list EFOR
+    | FOR '(' ID ASSIGN e ';' cond ';' decrementare')' list EFOR
+    ;
+
+do : DO list WHILE '(' cond ')' ';'
+   ;
+
+while : WHILE '(' cond ')' list EWHILE
+      ;
+
+
 
 e : e '+' e {$$ = buildAST("+", $1, $3, OPERATOR);}
   | e '-' e {$$ = buildAST("-", $1, $3, OPERATOR);}
   | e '/' e {$$ = buildAST("/", $1, $3, OPERATOR);}
   | e '*' e {$$ = buildAST("*", $1, $3, OPERATOR);}
+  | '(' e ')' { $$ = $2; }
   | ID 
   { 
     if(ids.existsVar($1))
@@ -699,64 +784,67 @@ e : e '+' e {$$ = buildAST("+", $1, $3, OPERATOR);}
   {
     $$ = buildAST($1, NULL, NULL, NR_NATURAL);
   }
+  | NUMAR_FLOAT
+  {
+    $$ = buildAST($1, NULL, NULL, NR_FLOAT);
+  }
   | ID '['NUMAR']'
   {
     string element = $1 + string("[") + $3 + string("]");
     $$ = buildAST(element, NULL, NULL, ARRAY_ELEMENT);
   }
+  | ID '('call_list')'
+  {
+    if(ids.existsFunction($1))
+    {
+        if(ids.matchFunctionArguments($1, $3, yylineno))
+        {
+            $$ = buildAST($1, NULL, NULL, FUNCTION);
+        }
+    }
+    else
+    {
+        yyerror("Error: Function not exists.");
+    }
+  }
+  | ID '('')'
+  {
+    if(ids.existsFunction($1))
+    {
+        if(ids.matchFunctionArguments($1, "" , yylineno))
+        {
+            $$ = buildAST($1, NULL, NULL, FUNCTION);
+        }
+    }
+    else
+    {
+        yyerror("Error: Function not exists.");
+    }
+  }
   
   ;
+
           
 
 incrementare : ID ARITMETIC_INCREMENT
                 {
-                    ids.incrementVar($1);
+                    ids.incrementVar($1, yylineno);
                 }
               | ID '['NUMAR']' ARITMETIC_INCREMENT
                 {
-                    ids.incrementArrayElement($1, atoi($3));
+                    ids.incrementArrayElement($1, atoi($3), yylineno);
                 }
                 ;
 
 decrementare : ID ARITMETIC_DECREMENT
                {
-                    ids.decrementVar($1);
+                    ids.decrementVar($1, yylineno);
                }
              | ID '['NUMAR']' ARITMETIC_DECREMENT
                {
-                    ids.decrementArrayElement($1, atoi($3)); 
+                    ids.decrementArrayElement($1, atoi($3), yylineno); 
                }
-
-apel_functie : ID'('call_list')'
-              {
-                if(ids.existsFunction($1))
-                {
-                    if(!ids.matchFunctionArguments($1, $3))
-                    {
-                        yyerror("Error: Numele functii este incorect sau numarul de parametrii nu este egal cu numarul de parmetrii cu care este declaarata functia sau tipurile parametrilor difera de tipurile parametrilor declarati.");
-                    }
-                    else
-                    {
-                        $$ = $1;
-                    }
-                }
-                else
-              {
-                yyerror("Error: Function not declared.");
-              }
-              } 
-              | ID '('')'
-              {
-                if(!ids.existsFunction($1))
-                {
-                    yyerror("Error: Function not declred.");
-                }
-                else
-                {
-                    $$ = $1;
-                }
-              }
-              ;
+               ;
 
 call_list : parametru
            {
@@ -768,102 +856,24 @@ call_list : parametru
            }
            ;
 
-parametru : ID
-      {
-           if(ids.existsVar($1))
-           {
-           string varType = ids.getVarType($1);
-           char type[10];
+parametru : e  
+            {
+                string exprType = TypeOf($1, ids, yylineno);
+                char type[10];
+                strcpy(type, Identificator(exprType));
+                
+                $$ = Function(type, "expresie", " ");
+            }
+            | CARACTER
+            {
+                $$ = Function("char", $1, " ");
+            }
+            | SIR
+            {
+                $$ = Function("string", $1, " ");
+            }
+            ;
 
-           if(varType == "int")
-           {
-                strcpy(type, "int");
-           }
-           else if(varType == "float")
-           {
-               strcpy(type, "float");
-           }
-           else if(varType == "unsigned")
-           {
-               strcpy(type, "unsigned");
-           } 
-           else if(varType == "char")
-           {
-               strcpy(type, "char");
-           } 
-           else if(type == "bool")
-           {
-               strcpy(type, "bool");
-           } 
-           else if(varType == "string")
-           {
-               strcpy(type, "string");
-           } 
-
-           $$ = Function(type, $1, " ");
-           }
-           else if(ids.existsConstant($1))
-           {
-            string varType = ids.getConstType($1);
-           char type[10];
-
-           if(varType == "int")
-           {
-                strcpy(type, "int");
-           }
-           else if(varType == "float")
-           {
-               strcpy(type, "float");
-           }
-           else if(varType == "unsigned")
-           {
-               strcpy(type, "unsigned");
-           } 
-           else if(varType == "char")
-           {
-               strcpy(type, "char");
-           } 
-           else if(type == "bool")
-           {
-               strcpy(type, "bool");
-           } 
-           else if(varType == "string")
-           {
-               strcpy(type, "string");
-           } 
-
-           $$ = Function(type, $1, " ");
-           }
-           else
-           {
-             yyerror("Error: Variable not exists.");
-           }
-      }
-      | NUMAR
-      {
-          $$ = Function("int", $1, " ");
-      }
-      | NUMAR_FLOAT
-      {
-          $$ = Function("float", $1, " ");
-      }
-      | CARACTER 
-      {
-          $$ = Function("char", $1, " ");
-      }
-      | SIR
-      {
-          $$ = Function("string", $1, " ");
-      }
-      | TRUE
-      {
-          $$ = Function("bool", "true", " ");
-      }
-      | FALSE
-      {
-          $$ = Function("bool", "false", " ");
-      }
-      ;
 %%
 
 void yyerror(const char * s){
@@ -877,4 +887,5 @@ int main(int argc, char** argv){
      ids.printArrays();
      ids.printFunctions();
      ids.printConstants();
+     ids.printClasses();
 }
