@@ -1,4 +1,6 @@
 #include "IdList.h"
+#include <sstream>
+#include <algorithm>
 using namespace std;
 
 void IdList::addVar(const char* type, const char* name) {
@@ -21,7 +23,45 @@ void IdList::addConstant(const char* type, const char* name, const char* value) 
     constants.push_back(constant);
 }
 
-bool IdList::existsVar(const char* var) {
+void IdList::addClass(const string& className) {
+    IdClass newClass;
+    newClass.name = className;
+    classes.push_back(newClass);
+}
+
+void IdList::addElementtoClass(const char* className, string parameters)
+{
+    auto it = find_if(classes.begin(), classes.end(), [&className](const IdClass& cls) {
+        return cls.name == className;
+    });
+
+    if (it != classes.end()) {
+        // Desparte șirul de parametrii în funcție de virgulă
+        stringstream ss(parameters);
+        string param;
+        while (std::getline(ss, param, ',')) {
+            // Desparte fiecare parametru în type și id
+            istringstream iss(param);
+            string varType, varName;
+            if (iss >> varType >> varName) {
+                // Adaugă variabila la clasa curentă
+                IdInfo newVar;
+                newVar.name = varName;
+                newVar.type = varType;
+                it->vars.push_back(newVar);
+            } else {
+                // Eroare la parsare
+                cout << "Error: Invalid parameter format: " << param << endl;
+            }
+        }
+    } else {
+        // Clasa nu a fost găsită
+        cout << "Error: Class not found: " << className << endl;
+    }
+}
+
+
+bool IdList::existsVar(string var) {
     string strvar = string(var);
     for (const IdInfo& v : vars) {
         if (strvar == v.name) { 
@@ -32,7 +72,7 @@ bool IdList::existsVar(const char* var) {
     return false;
 }
 
-bool IdList::existsArray(const char* ary) {
+bool IdList::existsArray(string ary) {
     string strvar = string(ary);
      for (const IdArray& arr : arrays) {
         if (strvar == arr.name) {
@@ -43,7 +83,7 @@ bool IdList::existsArray(const char* ary) {
     return false;
 }
 
-bool IdList::existsFunction(const char* func) {
+bool IdList::existsFunction(string func) {
     string strvar = string(func);
     for (const IdFunction& f : functions) {
         if (strvar == f.name) {
@@ -53,10 +93,23 @@ bool IdList::existsFunction(const char* func) {
     return false;
 }
 
-bool IdList::existsConstant(const char* con) {
+bool IdList::existsConstant(string con) {
     string strvar = string(con);
     for ( IdConstant& c : constants) {
         if (strvar == c.name) { 
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool IdList::existsClass(string cls)
+{
+    for(IdClass& cl: classes)
+    {
+        if(cls == cl.name)
+        {
             return true;
         }
     }
@@ -125,6 +178,57 @@ void IdList::printConstants() {
     }
 }
 
+void IdList::printClasses()  {
+    for (const auto& currentClass : classes) {
+        std::cout << "Class: " << currentClass.name << std::endl;
+
+        // Afișează variabilele
+        std::cout << "Variables:" << std::endl;
+        for (const auto& variable : currentClass.vars) {
+            cout << "  Type: " << variable.type << endl;
+            cout << "  Name: " << variable.name << endl;
+            cout << "  Value: " << variable.value << endl;
+        }
+
+        // Afișează array-urile
+        std::cout << "Arrays:" << std::endl;
+        for (const auto& array : currentClass.arrays) {
+            cout << "  Type: " << array.type << endl;
+            cout << "  Name: " << array.name << endl;
+            cout << "  Size: " << array.size << endl;
+            cout << "Values: [";
+            for (int i = 0; i < array.size; ++i) {
+                if (!array.values[i].empty()) {
+                    std::cout << array.values[i];
+                    if (i != array.size - 1) {
+                        std::cout << ", ";
+                    }
+                }
+                else
+                {
+                    std::cout << "NULL";
+                    if(i != array.size - 1)
+                    {
+                        cout << ", ";
+                    }
+                }
+            }
+            std::cout << "]" << std::endl;
+        }
+
+        // Afișează funcțiile
+        std::cout << "Functions:" << std::endl;
+        for (const auto& function : currentClass.functions) {
+            cout << "  Type: " << function.type << endl;
+            cout << "  Name: " << function.name << endl;
+            cout << "  Parameters:" << function.parameters << endl;
+            }
+    }
+
+        std::cout << std::endl;
+}
+
+
 
 string IdList::getVarType(string var) {
     string strvar = string(var);
@@ -147,7 +251,7 @@ string IdList::getArrayType(string var) {
     return ""; // În caz că variabila nu există
 }
 
-string IdList::getConstType(const char* var) {
+string IdList::getConstType(string var) {
     string strvar = string(var);
     for (const IdConstant& cons : constants) {
         if (strvar == cons.name) {
@@ -157,7 +261,7 @@ string IdList::getConstType(const char* var) {
     return ""; // În caz că variabila nu există
 }
 
-string IdList::getFunctionType(const char* var)
+string IdList::getFunctionType(string var)
 {
     string strvar = string(var);
     for(const IdFunction& func : functions)
@@ -180,7 +284,7 @@ string IdList::getVarValue(string var) {
     return ""; // În caz că variabila nu există
 }
 
-string IdList::getConstValue(const char* con) {
+string IdList::getConstValue(string con) {
     string strvar = string(con);
     for (const IdConstant& cons : constants) {
         if (strvar == cons.name) {
@@ -242,7 +346,7 @@ int IdList::getArraySize(const char* name) {
     return 0; // Dacă nu găsim array-ul, returnăm 0
 }
 
-void IdList::incrementVar(const char* name) {
+void IdList::incrementVar(const char* name, int yylineno) {
     for (IdInfo& v : vars) {
         if (v.name == name) {
             if (v.type == "int") {
@@ -253,31 +357,23 @@ void IdList::incrementVar(const char* name) {
                 float currentValue = stof(v.value);
                 currentValue++;
                 v.value = to_string(currentValue);
-            }  else if (v.type == "unsigned") {
-                unsigned int currentValue = stoul(v.value);
-                currentValue++;
-                v.value = to_string(currentValue);
             } else {
                 // Tratează cazul în care variabila nu este de tip întreg
-                std::cerr << "Error: Can only increment variables of type int or unsigned int." << std::endl;
+                cout<< "Error: Can only increment variables of type int or float at line: " << yylineno << endl;
             }
             return;
         }
     }
 
-    // Dacă variabila nu există, afișează un mesaj de eroare
-    std::cerr << "Error: Variable not found." << std::endl;
+
+    cout << "Error: Variable not found at line: " << yylineno << endl;
 }
 
-void IdList::incrementArrayElement(const char* name, int index) {
+void IdList::incrementArrayElement(const char* name, int index, int yylineno) {
     for (IdArray& arr : arrays) {
         if (arr.name == name && index >= 0 && index < arr.size) {
             if (arr.type == "int") {
                 int currentValue = stoi(arr.values[index]);
-                currentValue++;
-                arr.values[index] = to_string(currentValue);
-            } else if (arr.type == "unsigned") {
-                unsigned int currentValue = stoul(arr.values[index]);
                 currentValue++;
                 arr.values[index] = to_string(currentValue);
             } else if (arr.type == "float") {
@@ -285,18 +381,16 @@ void IdList::incrementArrayElement(const char* name, int index) {
                 currentValue++;
                 arr.values[index] = to_string(currentValue);
             }else {
-                // Tratează cazul în care elementul nu este de tip întreg
-                std::cerr << "Error: Can only increment elements of type int, unsigned or float in arrays." << std::endl;
+                cout << "Error: Can only increment elements of type int, unsigned or float in arrays at line: " << yylineno << endl;
             }
             return;
         }
     }
 
-    // Dacă array-ul nu există sau indexul este invalid, afișează un mesaj de eroare
-    std::cerr << "Error: Array or index not found." << std::endl;
+    cout << "Error: Array or index not found at line: "<< yylineno << endl;
 }
 
-void IdList::decrementVar(const char* name)
+void IdList::decrementVar(const char* name, int yylineno)
 {
      for (IdInfo& v : vars) {
         if (v.name == name) {
@@ -308,38 +402,24 @@ void IdList::decrementVar(const char* name)
                 float currentValue = stof(v.value);
                 currentValue--;
                 v.value = to_string(currentValue);
-            }  else if (v.type == "unsigned") {
-                unsigned int currentValue = stoul(v.value);
-                if(currentValue != 0)
-                {
-                    currentValue--;
-                    v.value = to_string(currentValue);
-                } else 
-                {
-                    cout << "Error : The value of variable is 0." << endl;
-                }
             } else {
                 // Tratează cazul în care variabila nu este de tip întreg
-                std::cout << "Error: Can only increment variables of type int or unsigned int." << std::endl;
+                std::cout << "Error: Can only increment variables of type int or unsigned int at line: " << yylineno << std::endl;
             }
             return;
         }
     }
 
     // Dacă variabila nu există, afișează un mesaj de eroare
-    std::cerr << "Error: Variable not found." << std::endl;
+    std::cerr << "Error: Variable not found at line: " << yylineno << std::endl;
 }
 
-void IdList::decrementArrayElement(const char* name, int index)
+void IdList::decrementArrayElement(const char* name, int index, int yylineno)
 {
     for (IdArray& arr : arrays) {
         if (arr.name == name && index >= 0 && index < arr.size) {
             if (arr.type == "int") {
                 int currentValue = stoi(arr.values[index]);
-                currentValue--;
-                arr.values[index] = to_string(currentValue);
-            } else if (arr.type == "unsigned") {
-                unsigned int currentValue = stoul(arr.values[index]);
                 currentValue--;
                 arr.values[index] = to_string(currentValue);
             } else if (arr.type == "float") {
@@ -351,22 +431,34 @@ void IdList::decrementArrayElement(const char* name, int index)
                 }
                 else
                 {
-                    std::cout << "Error : The value of variable is 0." << endl;
+                    cout << "Error : The value of variable is 0 at line: " << yylineno << endl;
                 }
             }else {
-                // Tratează cazul în care elementul nu este de tip întreg
-                std::cerr << "Error: Can only increment elements of type int, unsigned or float in arrays." << std::endl;
+                cout << "Error: Can only increment elements of type int, unsigned or float in arrays at line : " << yylineno << endl;
             }
             return;
         }
     }
 
-    // Dacă array-ul nu există sau indexul este invalid, afișează un mesaj de eroare
-    std::cerr << "Error: Array or index not found." << std::endl;
+
+    cout << "Error: Array or index not found at line: " << yylineno << endl;
 }
 
-bool IdList::matchFunctionArguments(const char* name, string argumente)
+bool IdList::matchFunctionArguments(const char* name, string argumente, int yylineno)
 {
+    if(argumente.empty())
+    {
+        string strvar = string(name);
+        for (const IdFunction& f : functions) 
+        {
+            if (strvar == f.name && f.parameters.empty()) 
+            {
+                return true;
+            }
+            else return false;
+       }
+    }
+
     std::istringstream stream(argumente);
     std::string token;      
     std::vector<std::string> types_argumente;
@@ -399,12 +491,23 @@ bool IdList::matchFunctionArguments(const char* name, string argumente)
 
     if(types_argumente.size() != types_function.size())
     {
-        return false;
+        if(types_argumente.size() < types_function.size())
+        {
+            cout << "error: Expected more arguments at line: " << yylineno << endl;
+            return false;
+        }
+        else if(types_argumente.size() > types_function.size())
+        {
+            cout << "error: Too many arguments at line: " << yylineno << endl;
+            return false;
+        }
+        
     }
     else
     {
         if(types_argumente != types_function)
         {
+            cout << "error : The type of arguments differs from the type of arguments with which the function was defined at line : " << yylineno << endl;;
             return false;
         }
         else 
@@ -412,8 +515,6 @@ bool IdList::matchFunctionArguments(const char* name, string argumente)
             return true;
         }
     }
-
-    
 }
 
 IdList::~IdList() {
