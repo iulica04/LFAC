@@ -1,24 +1,36 @@
 begin_progr
-int x;
-char m[10];
-int y := 2;
-int adunare(int a, int b);
-int scadere();
-const int b := 10;
-int a := -2;
-bool bb := true;
-unsigned aa;
-string str;
-int q[10];
-begin_main
-x:= 10;
-aa := 0;
-a --;
-x ++;
-x --;
-scadere();
-adunare(x, y);
-m[1] := 'a';
-m[2] := 'b';
-end_main
+  int x;
+  int y;
+  int v[10];
+  float z;
+  x := 11;
+  int adunare(int a, int b);
+  float scadere(int c);
+  float fct(int c);
+  const int a := 3;
+  const int b := 4;
+
+  begin_main
+
+  v[0] := 1;
+  v[1] := 2;
+  v[2] := 3;
+  x := 10;
+  fct(adunare(x + v[0], 2 + 3));
+  y := (a + b * 2 + v[2]) * 2;
+  z := (1.2 + 1.4) / 2.0;
+  v[4] := adunare(v[0], v[1]);
+
+
+  if(x > 1 && x < 20)
+      x++;
+  end_if
+
+  eval((x > 1 && x < 20) || (y + 2 > 1));
+  eval((a + b * 2 + v[2]) * 2 + adunare(x + v[0], 2 + 3));
+
+  TypeOf(x + scadere(x));
+  
+
+  end_main
 end_progr
