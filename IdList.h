@@ -72,7 +72,7 @@ public:
     bool existsClass(string s);
     void addVar(const char* type, const char* name);
     void addArray(const char* type, const char* name, int size);
-    void addFunction(const std::string& type, const std::string& name, const std::string& parameters);
+    void addFunction(const string type, const string name, string parameters);
     void addConstant(const char* type, const char* name, const char* value);
     void addClass(const string& name);
     void printVars();
@@ -97,10 +97,17 @@ public:
 
     bool matchFunctionArguments(const char* name, string argumente, int yylineno);
 
-    void addElementtoClass(const char* name, string argumente);
+    void addElementtoClass(const char* Classname, const char* type, const char* name);
+    void addFunctiontoClass(const char* ClassName, const char* type, const char* name, const char* parametrii);
+    bool existElementInClass(string className, string varName);
+    bool existFunctionInClass(string className, string fctName);
+    string getClassElementType(string className, string varName);
+    string getClassElementValue(string className, string varName);
+    string getClassFunctionType(string className, string fctName);
+    void updateClassElementValue(const char* className, const char* varName, string value);
+
 
     ~IdList();
 };
 
 #endif 
-
