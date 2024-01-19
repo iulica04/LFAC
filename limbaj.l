@@ -54,4 +54,3 @@
 \n {yylineno++;}                                                             // linie noua 
 . {return yytext[0];}
 %%
-
