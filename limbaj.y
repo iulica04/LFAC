@@ -55,7 +55,7 @@ char  *Identificator(string varType)
 }
 %token BGIN_MAIN END_MAIN BGIN_PROG END_PROG ASSIGN BGIN_CLASS END_CLASS MYCLASS EVAL TYPEOF
 %token<string> ID INT VOID UNSIGNED STRING CHAR FLOAT BOOL CALCULATE NUMAR NUMAR_FLOAT CARACTER SIR TRUE FALSE CONST ARITMETIC_INCREMENT ARITMETIC_DECREMENT 
-%type<string> list_param parametru 
+%type<string> list_param parametru declarare_variabile declarare_functii
 %type<string> param type call_list 
 %token<string> LEQ GEQ NEQ EQ RETURN BFCT EFCT
 %token<string> AND OR
@@ -77,9 +77,11 @@ progr: BGIN_PROG global block END_PROG {printf("The program is correct!\n");}
      ;
 
 global :  decl_variabile ';'     
-          | functii ';'     
+          | functii ';'  
+          | clasa ';'   
 	      | global decl_variabile ';'  
           | global functii ';'
+          | global clasa ';'
 	      ;
 
 decl_variabile : INT ID 
@@ -392,11 +394,188 @@ type : INT
        }
        ;
 
+clasa : MYCLASS ID BGIN_CLASS block_clasa END_CLASS
+      {
+        if(!ids.existsClass($2))
+        {
+            ids.addClass($2);
+        }
+      }
+
+block_clasa : declarare_variabile ';'
+              | declarare_functii ';'
+          //  | declarare_constante ';'
+          //  | block_clasa declarare_constante ';'
+              | block_clasa declarare_functii ';'
+              | block_clasa declarare_variabile ';'
+
+declarare_variabile : INT ID'.'ID
+                    {
+                        if(!ids.existsClass($2))
+                        {
+                            ids.addClass($2);
+                        }
+
+                        if(!ids.existElementInClass($2, $4))
+                        {
+                            ids.addElementtoClass($2, $1, $4);
+                        }
+                        else 
+                        {
+                            yyerror("Error : Element exists.");
+                        }
+                    }
+                    | FLOAT ID'.'ID
+                    {
+                        if(!ids.existsClass($2))
+                        {
+                            ids.addClass($2);
+                        }
+
+                        if(!ids.existElementInClass($2, $4))
+                        {
+                            ids.addElementtoClass($2, $1, $4);
+                        }
+                        else 
+                        {
+                            yyerror("Error : Element exists.");
+                        }
+                    }
+                    | CHAR ID'.'ID
+                    {
+                        if(!ids.existsClass($2))
+                        {
+                            ids.addClass($2);
+                        }
+
+                        if(!ids.existElementInClass($2, $4))
+                        {
+                            ids.addElementtoClass($2, $1, $4);
+                        }
+                        else 
+                        {
+                            yyerror("Error : Element exists.");
+                        }
+                    }
+                    | STRING ID'.'ID
+                    {
+                        if(!ids.existsClass($2))
+                        {
+                            ids.addClass($2);
+                        }
+
+                        if(!ids.existElementInClass($2, $4))
+                        {
+                            ids.addElementtoClass($2, $1, $4);
+                        }
+                        else 
+                        {
+                            yyerror("Error : Element exists.");
+                        }
+                    }
+                    | BOOL ID'.'ID
+                    {
+                        if(!ids.existsClass($2))
+                        {
+                            ids.addClass($2);
+                        }
+
+                        if(!ids.existElementInClass($2, $4))
+                        {
+                            ids.addElementtoClass($2, $1, $4);
+                        }
+                        else 
+                        {
+                            yyerror("Error : Element exists.");
+                        }
+                    }
+                    ;
+
+declarare_functii : INT ID '.' ID '('param')'
+                  {
+                    if(!ids.existsClass($2))
+                    {
+                        ids.addClass($2);
+                    }
+
+                    if(!ids.existFunctionInClass($2, $4))
+                    {
+                        ids.addFunctiontoClass($2, $1, $4, $6);
+                    }
+                    else 
+                    {
+                        yyerror("Error : Function exists.");
+                    }
+                  }
+                  | FLOAT ID '.' ID '('param')'
+                  {
+                    if(!ids.existsClass($2))
+                    {
+                        ids.addClass($2);
+                    }
+
+                    if(!ids.existFunctionInClass($2, $4))
+                    {
+                        ids.addFunctiontoClass($2, $1, $4, $6);
+                    }
+                    else 
+                    {
+                        yyerror("Error : Function exists.");
+                    }
+                  }
+                  | CHAR ID '.' ID '('param')'
+                  {
+                    if(!ids.existsClass($2))
+                    {
+                        ids.addClass($2);
+                    }
+
+                    if(!ids.existFunctionInClass($2, $4))
+                    {
+                        ids.addFunctiontoClass($2, $1, $4, $6);
+                    }
+                    else 
+                    {
+                        yyerror("Error : Function exists.");
+                    }
+                  }
+                  | STRING ID '.' ID '('param')'
+                  {
+                    if(!ids.existsClass($2))
+                    {
+                        ids.addClass($2);
+                    }
+
+                    if(!ids.existFunctionInClass($2, $4))
+                    {
+                        ids.addFunctiontoClass($2, $1, $4, $6);
+                    }
+                    else 
+                    {
+                        yyerror("Error : Function exists.");
+                    }
+                  }
+                  | BOOL ID '.' ID '('param')'
+                  {
+                    if(!ids.existsClass($2))
+                    {
+                        ids.addClass($2);
+                    }
+
+                    if(!ids.existFunctionInClass($2, $4))
+                    {
+                        ids.addFunctiontoClass($2, $1, $4, $6);
+                    }
+                    else 
+                    {
+                        yyerror("Error : Function exists.");
+                    }
+                  }
+                  ;
 
 block : BGIN_MAIN list END_MAIN
      ;
      
-
 list :  asignare ';' 
      | incrementare ';'
      | decrementare ';'
@@ -670,6 +849,91 @@ asignare :  ID ASSIGN CARACTER
                 yyerror("Error: Variable not exists.");
             }
           }
+          | ID'.'ID ASSIGN CARACTER
+          {
+            if(ids.existsClass($1))
+            {
+                if(ids.existElementInClass($1, $3))
+                {
+                    string varType = ids.getClassElementType($1, $3);
+
+                    if(varType == "char")
+                    {
+                        ids.updateClassElementValue($1, $3, $5);
+                    }
+                    else
+                    {
+                        yyerror("Error: Incompatible types in assignment.");
+                    }
+                }
+                else
+                {
+                    yyerror("Error: Class variable not exxists.");
+                }
+            }
+            else
+            {
+                yyerror("Error: Class variable not exists.");
+            }
+          }
+          | ID'.'ID ASSIGN SIR
+          {
+            if(ids.existsClass($1))
+            {
+                if(ids.existElementInClass($1, $3))
+                {
+                    string varType = ids.getClassElementType($1, $3);
+
+                    if(varType == "string")
+                    {
+                        ids.updateClassElementValue($1, $3, $5);
+                    }
+                    else
+                    {
+                        yyerror("Error: Incompatible types in assignment.");
+                    }
+                }
+                else
+                {
+                    yyerror("Error: Class variable not exxists.");
+                }
+            }
+            else
+            {
+                yyerror("Error: Class variable not exists.");
+            }
+          }
+          | ID'.'ID ASSIGN e
+          {
+            if(ids.existsClass($1))
+            {
+                if(ids.existElementInClass($1, $3))
+                {
+                    string exprType = TypeOf($5, ids, yylineno);
+                    string varType = ids.getClassElementType($1, $3);
+
+                    if(exprType == varType)
+                    {
+                        int val = evalAST($5, ids, yylineno);
+                        string Val = to_string(val);
+
+                        ids.updateClassElementValue($1, $3, Val);
+                    }
+                    else 
+                    {
+                        yyerror("Error: Incompatible types in assignment.");
+                    }
+                }
+                else
+                {
+                    yyerror("Error: Class variable not exists.");
+                }
+            }
+            else
+            {
+                yyerror("Error: Class not exists.");
+            }
+          }
           ;
 
 apel_functie : ID '('call_list')'
@@ -700,7 +964,6 @@ apel_functie : ID '('call_list')'
              }
              | EVAL '('cond')'
              {
-                string val;
 
                 if($3 == 0)
                 {
@@ -762,8 +1025,6 @@ do : DO list WHILE '(' cond ')' ';'
 while : WHILE '(' cond ')' list EWHILE
       ;
 
-
-
 e : e '+' e {$$ = buildAST("+", $1, $3, OPERATOR);}
   | e '-' e {$$ = buildAST("-", $1, $3, OPERATOR);}
   | e '/' e {$$ = buildAST("/", $1, $3, OPERATOR);}
@@ -821,11 +1082,43 @@ e : e '+' e {$$ = buildAST("+", $1, $3, OPERATOR);}
         yyerror("Error: Function not exists.");
     }
   }
+  | ID'.'ID 
+  {
+    if(ids.existsClass($1))
+    {
+        if(ids.existElementInClass($1, $3))
+        {
+            string de_returnat = Function($1, $3, ".");
+            $$ = buildAST(de_returnat, NULL, NULL, CLASS_IDENTIFICATOR);
+        }
+        else
+        {
+            yyerror("Error: Class variable not exits.");
+        }
+    }
+    else
+    {
+        yyerror("Error: Class not exists.");
+    }
+  }
+  | ID'.'ID'('call_list')'
+  {
+    if(ids.existsClass($1))
+    {
+        if(ids.existFunctionInClass($1, $3))
+        {
+            string de_returnat = Function($1, $3, ".");
+            $$ = buildAST(de_returnat, NULL, NULL, FUNCTION_CLASS);
+        }
+    }
+    else
+    {
+        yyerror("Error: Class not exits.");
+    }
+  }
   
   ;
-
           
-
 incrementare : ID ARITMETIC_INCREMENT
                 {
                     ids.incrementVar($1, yylineno);
