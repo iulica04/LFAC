@@ -1,4 +1,20 @@
 begin_progr
+
+myClass numere
+  begin_clasa
+      int numere.x;
+      char numere.y;
+      string numere.z;
+      int numere.f(int a);
+  end_clasa;  
+
+
+myClass nr 
+  begin_clasa
+     int nr.x;
+  end_clasa;
+
+
   int x;
   int y;
   int v[10];
@@ -9,13 +25,22 @@ begin_progr
   float fct(int c);
   const int a := 3;
   const int b := 4;
+  string vv;
 
   begin_main
 
+  numere.x := 2;
+  numere.y := 'a';
+  numere.z := "string";
+  vv := "hello";
+  
+  
   v[0] := 1;
   v[1] := 2;
-  v[2] := 3;
-  x := 10;
+
+  adunare(numere.x, v[0]);
+  z := scadere(adunare(numere.x, numere.f(numere.x)));
+
   fct(adunare(x + v[0], 2 + 3));
   y := (a + b * 2 + v[2]) * 2;
   z := (1.2 + 1.4) / 2.0;
@@ -28,9 +53,15 @@ begin_progr
 
   eval((x > 1 && x < 20) || (y + 2 > 1));
   eval((a + b * 2 + v[2]) * 2 + adunare(x + v[0], 2 + 3));
-
-  TypeOf(x + scadere(x));
+  eval(2 > 4);
   
+
+  x := numere.x;
+  x := numere.f(x);
+
+  x := -1;
+  
+  eval(x + numere.x);
 
   end_main
 end_progr
