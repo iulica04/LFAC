@@ -11,22 +11,24 @@ enum nodeType
     NR_NATURAL =3,
     ARRAY_ELEMENT = 4,
     FUNCTION = 5,
-    NR_FLOAT = 6
+    NR_FLOAT = 6,
+    CLASS_IDENTIFICATOR = 7, 
+    FUNCTION_CLASS = 8
 };
 
 
 struct AST 
 {
-    std::string nume;
+    string nume;
     struct AST* st;
     struct AST* dr;
     enum nodeType node_type;
 };
 
-struct AST* buildAST(std::string nume, struct AST* st, struct AST* dr, enum nodeType type)
+struct AST* buildAST(string nume, struct AST* st, struct AST* dr, enum nodeType type)
 {
     struct AST* nod = new AST;
-    nod->nume = std::string(nume);
+    nod->nume = string(nume);
     nod->st = st;
     nod->dr = dr;
     nod->node_type = type;
@@ -54,7 +56,7 @@ int evalAST(struct AST* tree, IdList& idList, int yylineno)
                 else
                 if(type == "string")
                 {
-                    cout << "error: Tt is not possible to assign an int element with a string element at line: " << yylineno << endl;
+                    cout << "error: It is not possible to assign an int element with a string element at line: " << yylineno << endl;
                 }
                 else if(type == "int")
                 {
@@ -101,8 +103,8 @@ int evalAST(struct AST* tree, IdList& idList, int yylineno)
             size_t pos_open_bracket = element.find('[');
             size_t pos_close_bracket = element.find(']');
 
-            std::string nume = element.substr(0, pos_open_bracket);
-            std::string index_str = element.substr(pos_open_bracket + 1, pos_close_bracket - pos_open_bracket - 1);
+            string nume = element.substr(0, pos_open_bracket);
+            string index_str = element.substr(pos_open_bracket + 1, pos_close_bracket - pos_open_bracket - 1);
             int index = std::atoi(index_str.c_str());
             
 
@@ -136,6 +138,33 @@ int evalAST(struct AST* tree, IdList& idList, int yylineno)
         } else if(tree->node_type == FUNCTION)
         {
             return 0;
+        } else if(tree->node_type == CLASS_IDENTIFICATOR)
+        {
+            istringstream iss(tree->nume);
+            string id1, id2;
+            getline(iss, id1, '.');
+            getline(iss, id2);
+
+            string type = idList.getClassElementType(id1, id2);
+            if(type == "char")
+            {
+                cout << "error: It is not possible to assign an int element with a char element at line: " << yylineno << endl;
+            }
+            else
+            if(type == "bool")
+            {
+                cout << "error: It is not possible to assign an int element with a bool element at line: " << yylineno << endl;
+            }
+            else
+            if(type == "string")
+            {
+                cout << "error: It is not possible to assign an int element with a string element at line: " << yylineno << endl;
+            }
+            else if(type == "int")
+            {
+                int value = stoi(idList.getClassElementValue(id1, id2));
+                return value;
+            }
         }
     }
     else
@@ -234,8 +263,8 @@ float evalASTfloat(struct AST* tree, IdList& idList, int yylineno)
             size_t pos_open_bracket = element.find('[');
             size_t pos_close_bracket = element.find(']');
 
-            std::string nume = element.substr(0, pos_open_bracket);
-            std::string index_str = element.substr(pos_open_bracket + 1, pos_close_bracket - pos_open_bracket - 1);
+            string nume = element.substr(0, pos_open_bracket);
+            string index_str = element.substr(pos_open_bracket + 1, pos_close_bracket - pos_open_bracket - 1);
             int index = std::atoi(index_str.c_str());
             
 
@@ -274,6 +303,38 @@ float evalASTfloat(struct AST* tree, IdList& idList, int yylineno)
         } else if(tree->node_type == FUNCTION)
         {
             return 0;
+        } else if(tree->node_type == FUNCTION_CLASS)
+        {
+            return 0;
+        }
+        else if(tree->node_type == CLASS_IDENTIFICATOR)
+        {
+
+            istringstream iss(tree->nume);
+            string id1, id2;
+            getline(iss, id1, '.');
+            getline(iss, id2);
+
+            string type = idList.getClassFunctionType(id1, id2);
+            if(type == "char")
+            {
+                cout << "error: It is not possible to assign an int element with a char element at line: " << yylineno << endl;
+            }
+            else
+            if(type == "bool")
+            {
+                cout << "error: It is not possible to assign an int element with a bool element at line: " << yylineno << endl;
+            }
+            else
+            if(type == "string")
+            {
+                cout << "error: It is not possible to assign an int element with a string element at line: " << yylineno << endl;
+            }
+            else if(type == "float")
+            {
+                float value = stof(idList.getClassElementValue(id1, id2));
+                return value;
+            }
         }
     }
     else
@@ -354,13 +415,48 @@ std::string TypeOf(struct AST* tree, IdList& idList, int yylineno)
                 return 0;
             }
         }
+        else if(tree->node_type == FUNCTION_CLASS)
+        {
+            istringstream iss(tree->nume);
+            string id1, id2;
+            getline(iss, id1, '.');
+            getline(iss, id2);
+
+            if(idList.existFunctionInClass(id1, id2))
+            {
+                string type = idList.getClassFunctionType(id1, id2);
+                return type;
+            }
+            else
+            {
+                cout << "error : Function '" << id1 << "' not found at line: " << yylineno << endl;
+                return 0;
+            }
+        }
+        else if(tree->node_type == CLASS_IDENTIFICATOR)
+        {
+            istringstream iss(tree->nume);
+            string id1, id2;
+            getline(iss, id1, '.');
+            getline(iss, id2);
+            
+            if(idList.existElementInClass(id1, id2))
+            {
+                string type = idList.getClassElementType(id1, id2);
+                return type;
+            }
+            else 
+            {
+                cout << "error : Function '" << id2 << "' not found at line: " << yylineno << endl;
+                return 0;
+            }
+        }
     }
     else
     {
         std::string typeLeft = TypeOf(tree->st, idList, yylineno);
         std::string typeRight = TypeOf(tree->dr, idList, yylineno);
 
-        // Verificare tipuri pentru operatori aritmetici
         if (typeLeft == typeRight)
         {
             if (tree->nume == "+" || tree->nume == "-" || tree->nume == "*" || tree->nume == "/")
@@ -369,15 +465,14 @@ std::string TypeOf(struct AST* tree, IdList& idList, int yylineno)
             }
             else
             {
-                // Adaugare mesaj de eroare pentru operatori necunoscuti
-                std::cerr << "Error: Unknown operator '" << tree->nume << "'." << std::endl;
+                
+                cout << "Error: Unknown operator '" << tree->nume << "'." << endl;
                 return 0;
             }
         }
         else
         {
-            // Adaugare mesaj de eroare pentru tipuri incompatibile
-            std::cerr << "Error: Incompatible types '" << typeLeft << "' and '" << typeRight << "' for operator '" << tree->nume << "'." << std::endl;
+            cout << "Error: Incompatible types '" << typeLeft << "' and '" << typeRight << "' for operator '" << tree->nume << "'." << endl;
             return 0;
         }
     }
