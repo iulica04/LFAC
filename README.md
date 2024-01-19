@@ -1,0 +1,2 @@
+Echipa : VREME IULIA B4
+         PIRLAC DIANA A5
