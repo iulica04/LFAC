@@ -1,0 +1,19 @@
+Functions: 
+Function Type: int
+Function Name: adunare
+Parameters: int a, int b
+
+Function Type: float
+Function Name: scadere
+Parameters: int c
+
+Function Type: float
+Function Name: fct
+Parameters: int c
+
+Class Functions:
+  Type: int
+  Name: f
+  Parameters:int a
+Class Functions:
+

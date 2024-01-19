@@ -1,0 +1,51 @@
+Variables: 
+Name: x
+Type: int
+Value: -1
+
+Name: y
+Type: int
+Value: 22
+
+Name: z
+Type: float
+Value: 1.300000
+
+Name: vv
+Type: string
+Value: hello
+
+
+Arrays: 
+Name: v
+Type: int
+Size: 10
+Values: [1, 2, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL]
+
+Constant elements: 
+Constant Type: int
+Constant Name: a
+Constant Value: 3
+
+Constant Type: int
+Constant Name: b
+Constant Value: 4
+
+Class: numere
+Variables:
+  Type: int
+  Name: x
+  Value: 2
+  Type: char
+  Name: y
+  Value: a
+  Type: string
+  Name: z
+  Value: string
+Arrays:
+Class: nr
+Variables:
+  Type: int
+  Name: x
+  Value: 
+Arrays:
