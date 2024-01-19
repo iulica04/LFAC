@@ -13,7 +13,7 @@ void IdList::addArray(const char* type, const char* name, int size) {
     arrays.push_back(arrayInfo);
 }
 
-void IdList::addFunction(const std::string& type, const std::string& name, const std::string& parameters) {
+void IdList::addFunction(const string type, const string name, const string parameters) {
     IdFunction function = {type, name, parameters};
     functions.push_back(function);
 }
@@ -29,35 +29,49 @@ void IdList::addClass(const string& className) {
     classes.push_back(newClass);
 }
 
-void IdList::addElementtoClass(const char* className, string parameters)
+void IdList::addElementtoClass(const char* className, const char* type, const char* name)
 {
-    auto it = find_if(classes.begin(), classes.end(), [&className](const IdClass& cls) {
-        return cls.name == className;
-    });
-
-    if (it != classes.end()) {
-        // Desparte șirul de parametrii în funcție de virgulă
-        stringstream ss(parameters);
-        string param;
-        while (std::getline(ss, param, ',')) {
-            // Desparte fiecare parametru în type și id
-            istringstream iss(param);
-            string varType, varName;
-            if (iss >> varType >> varName) {
-                // Adaugă variabila la clasa curentă
-                IdInfo newVar;
-                newVar.name = varName;
-                newVar.type = varType;
-                it->vars.push_back(newVar);
-            } else {
-                // Eroare la parsare
-                cout << "Error: Invalid parameter format: " << param << endl;
-            }
+    IdClass* foundClass = nullptr;
+    for (auto& currentClass : classes) {
+        if (currentClass.name == className) {
+            foundClass = &currentClass;
+            break;
         }
-    } else {
-        // Clasa nu a fost găsită
-        cout << "Error: Class not found: " << className << endl;
     }
+
+
+    if (foundClass) {
+        IdInfo newElement;
+        newElement.type = type;
+        newElement.name = name;
+        foundClass->vars.push_back(newElement);
+    } else {
+        
+        cout << "Error: Class '" << className << "' not found." << endl;
+    };
+}
+
+void IdList::addFunctiontoClass(const char* className, const char* type, const char* name, const char* parametrii)
+{
+    IdClass* foundClass = nullptr;
+    for (auto& currentClass : classes) {
+        if (currentClass.name == className) {
+            foundClass = &currentClass;
+            break;
+        }
+    }
+
+    if (foundClass) {
+        
+        IdFunction newFunction;
+        newFunction.type = type;
+        newFunction.name = name;
+        newFunction.parameters = parametrii;
+        foundClass->functions.push_back(newFunction);
+    } else {
+        
+        cout << "Error: Class '" << className << "' not found." << endl;
+    };
 }
 
 
@@ -117,6 +131,162 @@ bool IdList::existsClass(string cls)
     return false;
 }
 
+bool IdList::existElementInClass(string className, string varName)
+{
+    auto it = classes.begin();
+    for (; it != classes.end(); ++it) {
+        if (it->name == className) {
+            break;
+        }
+    }
+
+    if (it != classes.end()) {
+       
+        const auto& currentClass = *it;
+        for (const auto& element : currentClass.vars) {
+            if (element.name == varName) {
+                return true;
+            }
+        }
+        return false;
+    } else {
+        
+        cout << "Error: Class '" << className << "' not found." << endl;
+        return false;
+    }
+}
+
+bool IdList::existFunctionInClass(string className, string fctName)
+{
+    auto it = classes.begin();
+    for (; it != classes.end(); ++it) {
+        if (it->name == className) {
+            break;
+        }
+    }
+
+    if (it != classes.end()) {
+       
+        const auto& currentClass = *it;
+        for (const auto& fct : currentClass.functions) {
+            if (fct.name == fctName) {
+                return true;
+            }
+        }
+        return false;
+    } else {
+        
+        cout << "Error: Class '" << className << "' not found." << endl;
+        return false;
+    }
+}
+
+string IdList::getClassElementType(string className, string varName)
+{
+    auto it = classes.begin();
+    for (; it != classes.end(); ++it) {
+        if (it->name == className) {
+            break;
+        }
+    }
+
+    if (it != classes.end()) {
+       
+        const auto& currentClass = *it;
+        for (const auto& element : currentClass.vars) {
+            if (element.name == varName) {
+                return element.type;
+            }
+        }
+    return "";
+    } else {
+        
+        cout << "Error: Class '" << className << "' not found." << endl;
+        return "";
+    }
+}
+
+string IdList::getClassElementValue(string className, string varName)
+{
+    auto it = classes.begin();
+    for (; it != classes.end(); ++it) {
+        if (it->name == className) {
+            break;
+        }
+    }
+
+    if (it != classes.end()) {
+       
+        const auto& currentClass = *it;
+        for (const auto& element : currentClass.vars) {
+            if (element.name == varName) {
+                return element.value;
+            }
+        }
+    return "";
+    } else {
+        
+        cout << "Error: Class '" << className << "' not found." << endl;
+        return "";
+    }
+}
+
+string IdList::getClassFunctionType(string className, string fctName)
+{
+    auto it = classes.begin();
+    for (; it != classes.end(); ++it) {
+        if (it->name == className) {
+            break;
+        }
+    }
+
+    if (it != classes.end()) {
+       
+        const auto& currentClass = *it;
+        for (const auto& fct : currentClass.functions) {
+            if (fct.name == fctName) {
+                return fct.type;
+            }
+        }
+    return "";
+    } else {
+        
+        cout << "Error: Class '" << className << "' not found." << endl;
+        return "";
+    }
+}
+
+void IdList::updateClassElementValue(const char* className, const char* varName, string value)
+{
+    auto it = std::find_if(classes.begin(), classes.end(), [className](const IdClass& cls) {
+        return cls.name == className;
+    });
+
+    if (it != classes.end()) {
+        IdClass& currentClass = *it;
+        auto varIt = std::find_if(currentClass.vars.begin(), currentClass.vars.end(), [varName](const IdInfo& var) {
+            return var.name == varName;
+        });
+
+        if (varIt != currentClass.vars.end()) {
+            IdInfo& variable = *varIt;
+            string varType = getClassElementType(className, varName);
+            if(varType == "char")
+            {
+                variable.value = string(value)[1];
+            }
+            else  if (varType == "string")
+            {
+                variable.value = string(value).substr(1, string(value).length() - 2);
+            }
+            else
+            {
+                variable.value = string(value);
+            }
+        } 
+    }
+}
+
 void IdList::printVars() {
     cout << "Variables: " << endl;
     for (const IdInfo& v : vars) {
@@ -132,27 +302,27 @@ void IdList::printArrays()
 {
     cout << "Arrays: " << endl;
     for (const IdArray& arr : arrays) {
-        std::cout << "Name: " << arr.name << endl;
+        cout << "Name: " << arr.name << endl;
         cout << "Type: " << arr.type << endl;
         cout << "Size: " << arr.size << endl; 
         cout << "Values: [";
         for (int i = 0; i < arr.size; ++i) {
             if (!arr.values[i].empty()) {
-                std::cout << arr.values[i];
+                cout << arr.values[i];
                 if (i != arr.size - 1) {
-                    std::cout << ", ";
+                    cout << ", ";
                 }
             }
             else
             {
-                std::cout << "NULL";
+                cout << "NULL";
                 if(i != arr.size - 1)
                 {
                     cout << ", ";
                 }
             }
         }
-        std::cout << "]" << std::endl;
+        cout << "]" << endl;
         cout << endl;
     }
 }
@@ -160,10 +330,10 @@ void IdList::printArrays()
 void IdList::printFunctions() {
     cout << "Functions: " << endl;
     for (const IdFunction& func : functions) {
-        std::cout << "Function Type: " << func.type << std::endl;
-        std::cout << "Function Name: " << func.name << std::endl;
-        std::cout << "Parameters: " << func.parameters << std::endl;
-        std::cout << std::endl;  // Adaugă o linie goală între funcții pentru claritate
+        cout << "Function Type: " << func.type << endl;
+        cout << "Function Name: " << func.name << endl;
+        cout << "Parameters: " << func.parameters << endl;
+        cout << endl;  
     }
     
 }
@@ -174,24 +344,22 @@ void IdList::printConstants() {
         cout << "Constant Type: " << constant.type << endl;
         cout << "Constant Name: " << constant.name << endl;
         cout << "Constant Value: " << constant.value << endl;
-        cout << endl;  // Adaugă o linie goală între constante pentru claritate
+        cout << endl;  
     }
 }
 
 void IdList::printClasses()  {
     for (const auto& currentClass : classes) {
-        std::cout << "Class: " << currentClass.name << std::endl;
+        cout << "Class: " << currentClass.name << endl;
 
-        // Afișează variabilele
-        std::cout << "Variables:" << std::endl;
+        cout << "Variables:" << endl;
         for (const auto& variable : currentClass.vars) {
             cout << "  Type: " << variable.type << endl;
             cout << "  Name: " << variable.name << endl;
             cout << "  Value: " << variable.value << endl;
         }
 
-        // Afișează array-urile
-        std::cout << "Arrays:" << std::endl;
+        cout << "Arrays:" << endl;
         for (const auto& array : currentClass.arrays) {
             cout << "  Type: " << array.type << endl;
             cout << "  Name: " << array.name << endl;
@@ -199,14 +367,14 @@ void IdList::printClasses()  {
             cout << "Values: [";
             for (int i = 0; i < array.size; ++i) {
                 if (!array.values[i].empty()) {
-                    std::cout << array.values[i];
+                    cout << array.values[i];
                     if (i != array.size - 1) {
-                        std::cout << ", ";
+                        cout << ", ";
                     }
                 }
                 else
                 {
-                    std::cout << "NULL";
+                    cout << "NULL";
                     if(i != array.size - 1)
                     {
                         cout << ", ";
@@ -216,8 +384,7 @@ void IdList::printClasses()  {
             std::cout << "]" << std::endl;
         }
 
-        // Afișează funcțiile
-        std::cout << "Functions:" << std::endl;
+        cout << "Functions:" << endl;
         for (const auto& function : currentClass.functions) {
             cout << "  Type: " << function.type << endl;
             cout << "  Name: " << function.name << endl;
@@ -225,7 +392,7 @@ void IdList::printClasses()  {
             }
     }
 
-        std::cout << std::endl;
+        cout << endl;
 }
 
 
@@ -248,7 +415,7 @@ string IdList::getArrayType(string var) {
             return arr.type;
         }
     }
-    return ""; // În caz că variabila nu există
+    return ""; 
 }
 
 string IdList::getConstType(string var) {
@@ -258,7 +425,7 @@ string IdList::getConstType(string var) {
             return cons.type;
         }
     }
-    return ""; // În caz că variabila nu există
+    return "";
 }
 
 string IdList::getFunctionType(string var)
@@ -281,7 +448,7 @@ string IdList::getVarValue(string var) {
             return v.value;
         }
     }
-    return ""; // În caz că variabila nu există
+    return "";
 }
 
 string IdList::getConstValue(string con) {
@@ -291,7 +458,7 @@ string IdList::getConstValue(string con) {
             return cons.value;
         }
     }
-    return ""; // În caz că variabila nu există
+    return ""; 
 }
 
 string IdList::getArrayElementValue(string var, int index)
@@ -302,7 +469,7 @@ string IdList::getArrayElementValue(string var, int index)
                 return arr.values[index];
             }
         }
-    return ""; // În caz că variabila nu există
+    return ""; 
 }
 
 void IdList::updateVarValue(const char* var, string value) {
@@ -343,7 +510,7 @@ int IdList::getArraySize(const char* name) {
             return arr.size;
         }
     }
-    return 0; // Dacă nu găsim array-ul, returnăm 0
+    return 0; 
 }
 
 void IdList::incrementVar(const char* name, int yylineno) {
@@ -358,13 +525,11 @@ void IdList::incrementVar(const char* name, int yylineno) {
                 currentValue++;
                 v.value = to_string(currentValue);
             } else {
-                // Tratează cazul în care variabila nu este de tip întreg
                 cout<< "Error: Can only increment variables of type int or float at line: " << yylineno << endl;
             }
             return;
         }
     }
-
 
     cout << "Error: Variable not found at line: " << yylineno << endl;
 }
@@ -403,15 +568,13 @@ void IdList::decrementVar(const char* name, int yylineno)
                 currentValue--;
                 v.value = to_string(currentValue);
             } else {
-                // Tratează cazul în care variabila nu este de tip întreg
-                std::cout << "Error: Can only increment variables of type int or unsigned int at line: " << yylineno << std::endl;
+                cout << "Error: Can only increment variables of type int or unsigned int at line: " << yylineno << std::endl;
             }
             return;
         }
     }
 
-    // Dacă variabila nu există, afișează un mesaj de eroare
-    std::cerr << "Error: Variable not found at line: " << yylineno << std::endl;
+    cout << "Error: Variable not found at line: " << yylineno << endl;
 }
 
 void IdList::decrementArrayElement(const char* name, int index, int yylineno)
@@ -459,10 +622,10 @@ bool IdList::matchFunctionArguments(const char* name, string argumente, int yyli
        }
     }
 
-    std::istringstream stream(argumente);
-    std::string token;      
-    std::vector<std::string> types_argumente;
-    std::vector<std::string> types_function;
+    istringstream stream(argumente);
+    string token;      
+    vector<string> types_argumente;
+    vector<string> types_function;
             
      while (stream >> token) 
     {
